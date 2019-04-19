@@ -30,3 +30,16 @@ A: A room and hallways would have to have a location and size, and they must fit
 
 HI MICHAEL PERRY
 HI JUSTIN KUO
+////////////////////////////////////////////////////////////////////////////////////////
+A:
+   use a Weighted Quick Union(WQU) to check if all points populated are connected
+
+   generate a random number for number of rooms
+        generate a random number for width of room
+        generate a random number for height of room
+        add all points within area to WQU
+
+   generate a random number for number of hallways
+        generate a random number, even to go horizontal, odd for vertical
+        generate an random number for the length of the hallway
+        add points to the WQU
