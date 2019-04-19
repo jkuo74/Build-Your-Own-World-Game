@@ -29,3 +29,4 @@ In general, algorithms with as few edge cases as possible are better algorithms.
 A: A room and hallways would have to have a location and size, and they must fit into the screen. So an initial test would be whether or not they can fit, and if they can, where exactly in the map. Then, the rooms should be constructed and attached to the original map.
 
 HI MICHAEL PERRY
+HI JUSTIN KUO
