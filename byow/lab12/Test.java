@@ -9,10 +9,10 @@ import java.util.Random;
 
 
 public class Test {
-    private static final int WIDTH = 50;
-    private static final int HEIGHT = 50;
+    private static final int WIDTH = 60;
+    private static final int HEIGHT = 30;
 
-    private static final long SEED = 2873123;
+    private static final long SEED = 287313;
     private static final Random RANDOM = new Random(SEED);
 
 
@@ -21,8 +21,8 @@ public class Test {
         ter.initialize(WIDTH, HEIGHT);
         TETile[][] world = new TETile[WIDTH][HEIGHT];
 
-        int numRooms = Math.abs(RANDOM.nextInt()) % (WIDTH + HEIGHT);
-        int numHalls = Math.abs(RANDOM.nextInt()) % (WIDTH + HEIGHT);
+        int numRooms = Math.abs(RANDOM.nextInt()) % ((WIDTH + HEIGHT) / 2);
+        int numHalls = Math.abs(RANDOM.nextInt()) % ((WIDTH + HEIGHT) / 2);
         createWorld(world, numRooms, numHalls);
         ter.renderFrame(world);
     }
@@ -40,6 +40,7 @@ public class Test {
      * @param grid World to create on.
      */
     public static void createWorld(TETile[][] grid, int numRooms, int numHalls) {
+
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 grid[x][y] = Tileset.NOTHING;
@@ -49,8 +50,8 @@ public class Test {
         WeightedQuickUnionUF set = new WeightedQuickUnionUF(WIDTH * HEIGHT + 1);//TODO: make all connected
 
         for (int n = 0; n < numRooms; n++) {
-            int width = Math.abs(RANDOM.nextInt()) % ((WIDTH / 10) - 2) + 2;
-            int height = Math.abs(RANDOM.nextInt()) % ((HEIGHT / 10) - 2) + 2;
+            int width = Math.abs(RANDOM.nextInt()) % ((WIDTH / 5) - 2) + 2;
+            int height = Math.abs(RANDOM.nextInt()) % ((HEIGHT / 5) - 2) + 2;
             addArea(grid, set, width, height);
         }
 
@@ -71,7 +72,7 @@ public class Test {
     /**
      * 1) Get two random numbers for lower left corner point to create area on
      * 2) Set all points within area to be a FLOOR
-     * 3) Bound area with walls if current tile is still NOTHING
+     * 3) Bound area with WALL if tile is NOTHING
      *
      * @param grid   World to create on
      * @param set    Keep track the connectivity of the world
