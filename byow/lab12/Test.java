@@ -5,6 +5,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.util.HashSet;
 import java.util.Random;
 
 
@@ -27,6 +28,39 @@ public class Test {
         ter.renderFrame(world);
     }
 
+    public class Room {
+        private final int maxHallways = 8;
+        int x;
+        int y;
+        int width;
+        int height;
+        long id;
+        int hallways;
+        HashSet<Long> roomsConnected;
+
+        public Room(int x, int y, int w, int h, long id) {
+            this.x = x;
+            this.y = y;
+            this.width = w;
+            this.height = h;
+            this.id = id;
+            roomsConnected = new HashSet<>();
+        }
+        public long getId() {
+            return id;
+        }
+        public int getNumHallways() {
+            return hallways;
+        }
+        public boolean connectToRoom(Long roomId) {
+            if (roomsConnected.size() < maxHallways) {
+                roomsConnected.add(roomId);
+                hallways += 1;
+                return true;
+            }
+            return false;
+        }
+    }
     /**
      * 1) Initialize all tiles to NOTHING
      * 2) Get random numbers for number of rooms and number of halls to create
@@ -79,7 +113,7 @@ public class Test {
      * @param width  Width of the are to be created
      * @param height Height of the area to be created
      */
-    public static void addArea(TETile[][] grid, WeightedQuickUnionUF set, int width, int height) {
+    public static void addArea(TETile[][] grid, WeightedQuickUnionUF set, int  width, int height) {
         int LLX = Math.abs(RANDOM.nextInt()) % WIDTH;
         int LLY = Math.abs(RANDOM.nextInt()) % HEIGHT;
         //int connected = WIDTH * HEIGHT;
