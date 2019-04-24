@@ -1,4 +1,4 @@
-package byow.lab12;
+package byow.Core;
 
 import java.util.HashSet;
 
@@ -27,7 +27,7 @@ public class Room {
         return hallways;
     }
     public boolean connectToRoom(Long roomId) {
-        if (roomsConnected.size() < maxHallways) {
+        if (roomsConnected.size() < maxHallways && !roomsConnected.contains(roomId)) {
             roomsConnected.add(roomId);
             hallways += 1;
             return true;
