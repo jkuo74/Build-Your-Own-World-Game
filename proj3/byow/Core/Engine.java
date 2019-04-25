@@ -51,7 +51,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        // ter.initialize(WIDTH, HEIGHT);
+        ter.initialize(WIDTH, HEIGHT);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
 
         char prefix = input.charAt(0);
@@ -79,7 +79,7 @@ public class Engine {
         Room[] rooms = new Room[numRooms];
 
         createWorld(finalWorldFrame, rooms, rnd);
-        // ter.renderFrame(finalWorldFrame);
+        ter.renderFrame(finalWorldFrame);
 
         return finalWorldFrame;
     }
@@ -102,13 +102,15 @@ public class Engine {
         }
 
         int limit = (WIDTH + HEIGHT) / 16;
+        TETile roomTile = Tileset.FLOOR;
+        TETile hallwayTile = Tileset.FLOOR;
         for (int n = 0; n < rooms.length; n++) {
             int width = Math.abs(rnd.nextInt()) % limit + 2;
             int height = Math.abs(rnd.nextInt()) % limit + 2;
-            rooms[n] = addRoom(grid, width, height, rnd);
-            if (n != 0 && !checkBoundary(grid, rooms[n], Tileset.FLOOR)
-                    && !checkBoundary(grid, rooms[n], Tileset.AVATAR)) {
-                connectRooms(grid, rooms[n - 1], rooms[n], rnd);
+            rooms[n] = addRoom(grid, width, height, rnd, roomTile);
+            if (n != 0 && !checkBoundary(grid, rooms[n], roomTile)
+                    && !checkBoundary(grid, rooms[n], hallwayTile)) {
+                connectRooms(grid, rooms[n - 1], rooms[n], rnd, hallwayTile);
             }
         }
     }
@@ -183,10 +185,10 @@ public class Engine {
      * @param height Height of the area to be created
      * @return Returns initialized Room object
      */
-    public static Room addRoom(TETile[][] grid, int width, int height, Random rnd) {
+    public static Room addRoom(TETile[][] grid, int width, int height, Random rnd, TETile tile) {
         int lLX = Math.max(1, Math.abs(rnd.nextInt()) % (WIDTH - width - 1));
         int lLY = Math.max(1, Math.abs(rnd.nextInt()) % (HEIGHT - height - 1));
-        addArea(grid, lLX, lLY, width, height, Tileset.FLOOR);
+        addArea(grid, lLX, lLY, width, height, tile);
         return new Room(lLX, lLY, width, height, -1);
     }
 
@@ -200,15 +202,15 @@ public class Engine {
      * @param room1
      * @param room2
      */
-    public static void connectRooms(TETile[][] grid, Room room1, Room room2, Random rnd) {
+    public static void connectRooms(TETile[][] grid, Room room1, Room room2, Random rnd, TETile tile) {
         Room leftMost = (room1.x < room2.x) ? room1 : room2;
         Room rightMost = (leftMost == room1) ? room2 : room1;
 
         boolean orientation = rnd.nextBoolean();
         if (orientation) {
-            addHallway(grid, leftMost, rightMost, rnd);
+            addHallway(grid, leftMost, rightMost, rnd, tile);
         } else {
-            addHallway(grid, rightMost, leftMost, rnd);
+            addHallway(grid, rightMost, leftMost, rnd, tile);
         }
     }
 
@@ -221,7 +223,7 @@ public class Engine {
      * @param room1
      * @param room2
      */
-    public static void addHallway(TETile[][] grid, Room room1, Room room2, Random rnd) {
+    public static void addHallway(TETile[][] grid, Room room1, Room room2, Random rnd, TETile tile) {
         int give = 1;
         int widthLimit = Math.abs(room1.x - room2.x) + give;
         int heightLimit = Math.abs(room1.y - room2.y) + give;
@@ -230,14 +232,14 @@ public class Engine {
         int X = (Math.abs(rnd.nextInt()) % room2.width) + room2.x;
 
         if (room1.x > room2.x) {
-            addArea(grid, Math.max(0, room1.x - widthLimit), Y, widthLimit, 1, Tileset.FLOOR);
+            addArea(grid, Math.max(0, room1.x - widthLimit), Y, widthLimit, 1, tile);
         } else {
-            addArea(grid, room1.x + room1.width, Y, widthLimit, 1, Tileset.FLOOR);
+            addArea(grid, room1.x + room1.width, Y, widthLimit, 1, tile);
         }
         if (Y < room2.y) {
-            addArea(grid, X, Math.max(0, room2.y - heightLimit), 1, heightLimit, Tileset.FLOOR);
+            addArea(grid, X, Math.max(0, room2.y - heightLimit), 1, heightLimit, tile);
         } else {
-            addArea(grid, X, Math.max(0, Y - heightLimit), 1, heightLimit, Tileset.FLOOR);
+            addArea(grid, X, Math.max(0, Y - heightLimit), 1, heightLimit, tile);
         }
     }
 }
