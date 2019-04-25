@@ -10,7 +10,7 @@ public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     private static final int WIDTH = 60;
-    private static final int HEIGHT = 60;
+    private static final int HEIGHT = 40;
 
     // private static final long SEED = 287313;
     // private static final Random RANDOM = new Random(SEED);
@@ -66,6 +66,7 @@ public class Engine {
         }
 
         long seed = Long.parseLong(seedString);
+        System.out.println("Seed is: " + seed);
         Random rnd = new Random(seed);
 
         int maxGenFactor = (WIDTH + HEIGHT) / 2;
@@ -75,7 +76,7 @@ public class Engine {
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
 
         // numHalls is a between numRooms to 2*numRooms
-        int numHalls = (Math.abs(rnd.nextInt()) % numRooms) + numRooms;
+        // int numHalls = (Math.abs(rnd.nextInt()) % numRooms) + numRooms;
         Room[] rooms = new Room[numRooms];
 
         createWorld(finalWorldFrame, rooms, rnd);
@@ -106,7 +107,7 @@ public class Engine {
             int width = Math.abs(rnd.nextInt()) % limit + 2;
             int height = Math.abs(rnd.nextInt()) % limit + 2;
             rooms[n] = addRoom(grid, width, height, rnd);
-            if (n != 0 && !checkBoundary(grid, rooms[n], Tileset.FLOOR)) {
+            if (n != 0 && !checkBoundary(grid, rooms[n], Tileset.FLOOR) && !checkBoundary(grid, rooms[n], Tileset.AVATAR)) {
                 connectRooms(grid, rooms[n - 1], rooms[n], rnd);
             }
         }
@@ -120,13 +121,15 @@ public class Engine {
      * @return Returns true if tile found, false if not
      */
     public static boolean checkBoundary(TETile[][] grid, Room room, TETile tile) {
-        for (int col = room.x; col < room.x + room.width; col++) {
-            if (grid[col][room.y] == tile || grid[col][room.y + room.height] == tile) {
+        for (int col = room.x; col < room.x + room.width && col < WIDTH; col++) {
+            if (room.y - 1 >= 0 && grid[col][room.y - 1] == tile
+                    || ((room.y + room.height) < HEIGHT && grid[col][room.y + room.height] == tile)) {
                 return true;
             }
         }
         for (int row = room.y; row < room.y + room.height && row < grid.length; row++) {
-            if (grid[room.x][row] == tile || grid[room.x + room.width][row] == tile) {
+            if ((room.x - 1 >= 0 && grid[room.x - 1][row] == tile) ||
+                    (room.x + room.width < WIDTH && grid[room.x + room.width][row] == tile)) {
                 return true;
             }
         }
@@ -143,27 +146,27 @@ public class Engine {
      * @param width  Width of the are to be created
      * @param height Height of the area to be created
      */
-    public static void addArea(TETile[][] grid, int LLX, int LLY, int width, int height) {
-        for (int row = LLY + 1; row < LLY + height - 1 && row < HEIGHT - 1; row++) {
-            for (int col = LLX + 1; col < LLX + width - 1 && col < WIDTH - 1; col++) {
-                grid[col][row] = Tileset.FLOOR;
+    public static void addArea(TETile[][] grid, int LLX, int LLY, int width, int height, TETile tile) {
+        for (int row = Math.max(1, LLY); row < LLY + height && row < HEIGHT - 1; row++) {
+            for (int col = Math.max(1, LLX); col < LLX + width && col < WIDTH - 1; col++) {
+                grid[col][row] = tile;
             }
         }
-        for (int col = LLX; col < WIDTH && col < LLX + width; col++) {
-            if (grid[col][LLY] == Tileset.NOTHING) {
-                grid[col][LLY] = Tileset.WALL;
+        for (int col = Math.max(0, LLX - 1); col < WIDTH && col < LLX + width + 1; col++) {
+            if (LLY - 1 >= 0 && grid[col][LLY - 1] == Tileset.NOTHING) {
+                grid[col][LLY - 1] = Tileset.WALL;
             }
-            if (grid[col][LLY + height - 1] == Tileset.NOTHING) {
-                grid[col][LLY + height - 1] = Tileset.WALL;
+            if (LLY + height < HEIGHT && grid[col][LLY + height] == Tileset.NOTHING) {
+                grid[col][LLY + height] = Tileset.WALL;
             }
         }
 
         for (int row = LLY; row < HEIGHT && row < LLY + height; row++) {
-            if (grid[LLX][row] == Tileset.NOTHING) {
-                grid[LLX][row] = Tileset.WALL;
+            if (LLX - 1 >= 0 && grid[LLX-1][row] == Tileset.NOTHING) {
+                grid[LLX - 1][row] = Tileset.WALL;
             }
-            if (grid[LLX + width - 1][row] == Tileset.NOTHING) {
-                grid[LLX + width - 1][row] = Tileset.WALL;
+            if (LLX + width < WIDTH && grid[LLX + width][row] == Tileset.NOTHING) {
+                grid[LLX + width][row] = Tileset.WALL;
             }
         }
     }
@@ -182,7 +185,7 @@ public class Engine {
     public static Room addRoom(TETile[][] grid, int width, int height, Random rnd) {
         int LLX = Math.max(1, Math.abs(rnd.nextInt()) % (WIDTH - width - 1));
         int LLY = Math.max(1, Math.abs(rnd.nextInt()) % (HEIGHT - height - 1));
-        addArea(grid, LLX, LLY, width, height);
+        addArea(grid, LLX, LLY, width, height, Tileset.FLOOR);
         return new Room(LLX, LLY, width, height, -1);
     }
 
@@ -217,22 +220,22 @@ public class Engine {
      * @param room2
      */
     public static void addHallway(TETile[][] grid, Room room1, Room room2, Random rnd) {
-        int widthLimit = Math.abs(room1.x - room2.x) + (Math.abs(rnd.nextInt()) % Math.max(room1.width, room2.width));
-        int heightLimit = Math.abs(room1.y - room2.y) + (Math.abs(rnd.nextInt()) % Math.max(room1.height, room2.height));
+        int give = 1;
+        int widthLimit = Math.abs(room1.x - room2.x) + give;// + (Math.abs(rnd.nextInt()) % Math.min(room1.width, room2.width));
+        int heightLimit = Math.abs(room1.y - room2.y) + give;// + (Math.abs(rnd.nextInt()) % Math.min(room1.height, room2.height));
 
         int Y = (Math.abs(rnd.nextInt()) % room1.height) + room1.y;
         int X = (Math.abs(rnd.nextInt()) % room2.width) + room2.x;
 
         if (room1.x > room2.x) {
-            addArea(grid, Math.max(0, room1.x - widthLimit), Y, widthLimit, 3);
+            addArea(grid, Math.max(0, room1.x - widthLimit), Y, widthLimit, 1, Tileset.FLOOR);
         } else {
-            addArea(grid, room1.x + room1.width, Y, widthLimit, 3);
+            addArea(grid, room1.x + room1.width, Y, widthLimit, 1, Tileset.FLOOR);
         }
-        if (room1.y < room2.y) {
-            addArea(grid, X, Math.max(0, room2.y - heightLimit), 3, heightLimit);
+        if (Y < room2.y) {
+            addArea(grid, X, Math.max(0, room2.y - heightLimit), 1, heightLimit, Tileset.FLOOR);
         } else {
-            addArea(grid, X, Math.max(0, Y - heightLimit), 3, heightLimit);
+            addArea(grid, X, Math.max(0, Y - heightLimit), 1, heightLimit, Tileset.FLOOR);
         }
     }
-
 }
