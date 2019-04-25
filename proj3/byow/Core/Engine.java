@@ -51,7 +51,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        ter.initialize(WIDTH, HEIGHT);
+        // ter.initialize(WIDTH, HEIGHT);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
 
         char prefix = input.charAt(0);
