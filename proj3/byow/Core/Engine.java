@@ -79,7 +79,7 @@ public class Engine {
         Room[] rooms = new Room[numRooms];
 
         createWorld(finalWorldFrame, rooms, rnd);
-        ter.renderFrame(finalWorldFrame);
+        // ter.renderFrame(finalWorldFrame);
 
         return finalWorldFrame;
     }
