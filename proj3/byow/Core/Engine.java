@@ -55,25 +55,14 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
 
-        char prefix = input.charAt(0);
-        String seedString = "";
-        int i = 1;
-        while (Character.isDigit(input.charAt(i))) {
-            seedString += input.charAt(i);
-            i += 1;
-        }
-        char endSeedChar = input.charAt(i);
-        String rest = input.substring(i + 1); // commands to execute
 
-        // Check prefix, suffix, and that input contains only digits.
-        if ((prefix != 'N' && prefix != 'n') || (endSeedChar != 'S'
-                && endSeedChar != 's') || !seedString.matches("\\d+")) {
+        Object[] commands = generateSeed(input);
+        // If seed could not be generated, return
+        if (commands[0] == null|| commands[1] == null) {
             return finalWorldFrame;
         }
-        long seed = Long.parseLong(seedString);
-        System.out.println("Seed is: " + seed);
-        Random rnd = new Random(seed);
 
+        Random rnd = (Random) commands[0];
         int maxGenFactor = (WIDTH + HEIGHT) / 2;
         int minGenFactor = (WIDTH + HEIGHT) / 10;
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
@@ -82,6 +71,7 @@ public class Engine {
         Hero hero = placeHero(finalWorldFrame, rnd);
 
         if (isLoad) {
+            String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 keyboardInput(finalWorldFrame, rest.charAt(j), hero);
             }
@@ -114,6 +104,31 @@ public class Engine {
             }
         }
         return finalWorldFrame;
+    }
+
+    // Function returns an array with Random object and "rest" string
+    public Object[] generateSeed(String input) {
+        Object[] result = new Object[2];
+        char prefix = input.charAt(0);
+        String seedString = "";
+        int i = 1;
+        while (Character.isDigit(input.charAt(i))) {
+            seedString += input.charAt(i);
+            i += 1;
+        }
+        char endSeedChar = input.charAt(i);
+        result[1] = input.substring(i + 1); // "rest string - commands to execute
+
+        // Check prefix, suffix, and that input contains only digits.
+        if ((prefix != 'N' && prefix != 'n') || (endSeedChar != 'S'
+                && endSeedChar != 's') || !seedString.matches("\\d+")) {
+            return result;
+        }
+        long seed = Long.parseLong(seedString);
+        System.out.println("Seed is: " + seed);
+        result[0] = new Random(seed);
+
+        return result;
     }
 
     // @Source: Editor class
