@@ -3,6 +3,7 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.util.Random;
 
@@ -19,7 +20,101 @@ public class Engine {
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
+
+    //TODO MORE DETAILED
+    private class Hero {
+        int x;
+        int y;
+
+        public Hero(int xPos, int yPos) {
+            x = xPos;
+            y = yPos;
+        }
+    }
+
     public void interactWithKeyboard() {
+
+        ter.initialize(WIDTH, HEIGHT);
+        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+
+        //TODO MAIN MENU FOR SEED GENERATION...
+        Random rnd = new Random(1234567);
+
+        int maxGenFactor = (WIDTH + HEIGHT) / 2;
+        int minGenFactor = (WIDTH + HEIGHT) / 10;
+
+        int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
+
+        Room[] rooms = new Room[numRooms];
+
+        createWorld(finalWorldFrame, rooms, rnd);
+        ter.renderFrame(finalWorldFrame);
+
+        Hero hero = new Hero(3,5); //TODO initialize character in a random position within a valid position of the world
+        boolean endReached = false;
+        while (!endReached) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char input = StdDraw.nextKeyTyped();
+                keyboardInput(finalWorldFrame, input, hero);
+                ter.renderFrame(finalWorldFrame);
+            }
+            //TODO create a door/objective to reach
+            if (endReached) {
+                endReached = !endReached;
+            }
+        }
+    }
+
+    /**
+     * Move character given "WASD" movement directions
+     *
+     * @param grid  World to move on
+     * @param input Given input character
+     */
+    public void keyboardInput(TETile[][] grid, char input, Hero hero) {
+        switch (input) {
+            case 'W':
+            case 'w':
+                move(grid, 0, 1,hero);
+                break;
+            case 'A':
+            case 'a':
+                move(grid, -1, 0,hero);
+                break;
+            case 'S':
+            case 's':
+                move(grid, 0, -1,hero);
+                break;
+            case 'D':
+            case 'd':
+                move(grid, 1, 0,hero);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Moves character to another adjacent tile given move direction and successfully moves if
+     * coordinate is a floor. Update character's position if move is successful. Assumes coordinate
+     * moving to is always in bounds of the grid
+     *
+     * @param grid  World to move on
+     * @param moveX Change in coordinate in X direction
+     * @param moveY Change in coordinate in Y direction
+     */
+    public static void move(TETile[][] grid, int moveX, int moveY, Hero hero) {
+        int hX = hero.x;
+        int hY = hero.y;
+
+        if (grid[hX + moveX][hY + moveY] == Tileset.FLOOR) {
+            grid[hX + moveX][hY + moveY] = Tileset.AVATAR;
+            grid[hX][hY] = Tileset.FLOOR;
+            hero.x += moveX;
+            hero.y += moveY;
+        } else {
+            System.out.println("Invalid Move"); //TODO TAKE OUT LATER
+        }
     }
 
     /**
@@ -27,18 +122,18 @@ public class Engine {
      * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The engine should
      * behave exactly as if the user typed these characters into the engine using
      * interactWithKeyboard.
-     *
+     * <p>
      * Recall that strings ending in ":q" should cause the game to quite save. For example,
      * if we do interactWithInputString("n123sss:q"), we expect the game to run the first
      * 7 commands (n123sss) and then quit and save. If we then do
      * interactWithInputString("l"), we should be back in the exact same state.
-     *
+     * <p>
      * In other words, both of these calls:
-     *   - interactWithInputString("n123sss:q")
-     *   - interactWithInputString("lww")
-     *
+     * - interactWithInputString("n123sss:q")
+     * - interactWithInputString("lww")
+     * <p>
      * should yield the exact same world state as:
-     *   - interactWithInputString("n123sssww")
+     * - interactWithInputString("n123sssww")
      *
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
@@ -60,7 +155,7 @@ public class Engine {
 
         // Check prefix, suffix, and that input contains only digits.
         if ((prefix != 'N' && prefix != 'n') || (suffix != 'S'
-            && suffix != 's') || !seedString.matches("\\d+")) {
+                && suffix != 's') || !seedString.matches("\\d+")) {
             return finalWorldFrame;
         }
 
@@ -88,9 +183,10 @@ public class Engine {
      * 1) Initialize all tiles to NOTHING
      * 2) Add the number of Rooms based off passed in Room array size
      * 3) Room size height and width are limited to the sum of the
-     *      HEIGHT and WIDTH over 16 CAN CHANGE
+     * HEIGHT and WIDTH over 16 CAN CHANGE
      * 4) Connect initialized room wiht previously initialized room if it is not already connected
-     * @param grid World to create on.
+     *
+     * @param grid  World to create on.
      * @param rooms Room to create.
      */
     public static void createWorld(TETile[][] grid, Room[] rooms, Random rnd) {
@@ -102,7 +198,7 @@ public class Engine {
 
         int limit = (WIDTH + HEIGHT) / 16;
         TETile roomTile = Tileset.FLOOR;
-        TETile hallwayTile = Tileset.AVATAR;
+        TETile hallwayTile = Tileset.FLOOR;
         for (int n = 0; n < rooms.length; n++) {
             int width = Math.abs(rnd.nextInt()) % limit + 2;
             int height = Math.abs(rnd.nextInt()) % limit + 2;
@@ -116,6 +212,7 @@ public class Engine {
 
     /**
      * Checks borders if any tile equals the tile parameter
+     *
      * @param grid Grid to check on
      * @param room Room to check border on
      * @param tile Tile to look for around the room
