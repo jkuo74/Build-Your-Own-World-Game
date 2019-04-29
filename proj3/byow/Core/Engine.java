@@ -6,6 +6,7 @@ import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -115,17 +116,49 @@ public class Engine {
         return finalWorldFrame;
     }
 
-    // TODO how to retrieve sequence of moves (String) from file?
+    // @Source: Editor class
     public void loadSavedGame() {
         // get list of commands from file
         String savedInput = "";
-        // run startNewGame running the "rest" commands
-        runGame(savedInput, true, true);
+        File f = new File("./save.txt");
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                savedInput = (String) os.readObject();
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("class not found");
+                System.exit(0);
+            }
+            // run startNewGame running the "rest" commands
+            runGame(savedInput, true, true);
+        }
     }
 
-    // TODO how to save sequence of moves (String) to file?
+    // @Source: Editor class
     private void quitAndSave(String s) {
-        System.out.println("This should quit and save with the following input: " + s);
+        File f = new File("./save.txt");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(s);
+            System.out.println("file saved successfully, thanks for playing!");
+        }  catch (FileNotFoundException e) {
+            System.out.println("file not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
         System.exit(0);
     }
 

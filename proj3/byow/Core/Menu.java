@@ -61,7 +61,8 @@ public class Menu {
     }
 
     public void run() {
-        while (true) {
+        boolean flag = true;
+        while (flag) {
             if (StdDraw.hasNextKeyTyped()) {
                 char c = StdDraw.nextKeyTyped();
                 switch (c) {
