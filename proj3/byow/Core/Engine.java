@@ -30,10 +30,15 @@ public class Engine {
     private class Hero {
         int x;
         int y;
+        boolean hasKey = false;
 
         public Hero(int xPos, int yPos) {
             x = xPos;
             y = yPos;
+        }
+
+        public void takeKey() {
+            hasKey = true;
         }
     }
 
@@ -83,17 +88,15 @@ public class Engine {
         if (isKeyboard) {
             boolean endReached = false;
 
-            String inputSequence = "";
+            String userInput = "";
             while (!endReached) {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
-                    if (inputSequence.length() > 0
-                            && inputSequence.charAt(inputSequence.length() - 1) == ':'
-                            && (c == 'q' || c == 'Q')) {
-                        inputSequence += c;
-                        quitAndSave(input + inputSequence);
+                    if (quitSequence(c, userInput)) {
+                        userInput += c;
+                        quitAndSave(input + userInput);
                     }
-                    inputSequence += c;
+                    userInput += c;
                     keyboardInput(finalWorldFrame, c, hero);
                     ter.renderFrame(finalWorldFrame);
                 }
@@ -106,6 +109,15 @@ public class Engine {
         return finalWorldFrame;
     }
 
+    // Given all previous inputs and the latest key inserted, check
+    // if quit sequence was pressed
+    private boolean quitSequence(char c, String s) {
+        if (s.length() > 0 && s.charAt(s.length() - 1) == ':'
+                && (c == 'q' || c == 'Q')) {
+            return true;
+        }
+        return false;
+    }
     // Function returns an array with Random object and "rest" string
     public Object[] generateSeed(String input) {
         Object[] result = new Object[2];
@@ -133,7 +145,6 @@ public class Engine {
 
     // @Source: Editor class
     public void loadSavedGame() {
-        // get list of commands from file
         String savedInput = "";
         File f = new File("./save.txt");
         if (f.exists()) {
