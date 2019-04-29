@@ -58,7 +58,7 @@ public class Engine {
 
         Object[] commands = generateSeed(input);
         // If seed could not be generated, return
-        if (commands[0] == null|| commands[1] == null) {
+        if (commands[0] == null || commands[1] == null) {
             return finalWorldFrame;
         }
 
@@ -167,7 +167,7 @@ public class Engine {
             ObjectOutputStream os = new ObjectOutputStream(fs);
             os.writeObject(s);
             System.out.println("file saved successfully, thanks for playing!");
-        }  catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("file not found");
             System.exit(0);
         } catch (IOException e) {
@@ -188,8 +188,9 @@ public class Engine {
                 validPoint = true;
             }
         }
-        return new Hero(x,y);
+        return new Hero(x, y);
     }
+
     /**
      * Move character given "WASD" movement directions
      *
@@ -200,19 +201,19 @@ public class Engine {
         switch (input) {
             case 'W':
             case 'w':
-                move(grid, 0, 1,hero);
+                move(grid, 0, 1, hero);
                 break;
             case 'A':
             case 'a':
-                move(grid, -1, 0,hero);
+                move(grid, -1, 0, hero);
                 break;
             case 'S':
             case 's':
-                move(grid, 0, -1,hero);
+                move(grid, 0, -1, hero);
                 break;
             case 'D':
             case 'd':
-                move(grid, 1, 0,hero);
+                move(grid, 1, 0, hero);
                 break;
             default:
                 break;
@@ -347,24 +348,27 @@ public class Engine {
                 grid[col][row] = tile;
             }
         }
-        int lowerBoundX = lLX - 1;
-        int lowerBoundY = lLY - 1;
 
-        for (int col = Math.max(0, lowerBoundX); col < WIDTH && col < lLX + width + 1; col++) {
-            if (lowerBoundY >= 0 && grid[col][lowerBoundY] == Tileset.NOTHING) {
+        int lowerBoundX = Math.max(0, lLX - 1);
+        int upperBoundX = Math.min(lLX + width, WIDTH - 1);
+        int lowerBoundY = Math.max(0, lLY - 1);
+        int upperBoundY = Math.min(lLY + height, HEIGHT - 1);
+
+        for (int col = lowerBoundX; col < upperBoundX + 1; col++) {
+            if (grid[col][lowerBoundY] == Tileset.NOTHING) {
                 grid[col][lowerBoundY] = Tileset.WALL;
             }
-            if (lLY + height < HEIGHT && grid[col][lLY + height] == Tileset.NOTHING) {
-                grid[col][lLY + height] = Tileset.WALL;
+            if (grid[col][upperBoundY] == Tileset.NOTHING) {
+                grid[col][upperBoundY] = Tileset.WALL;
             }
         }
 
-        for (int row = lLY; row < HEIGHT && row < lLY + height; row++) {
-            if (lowerBoundX >= 0 && grid[lowerBoundX][row] == Tileset.NOTHING) {
+        for (int row = lowerBoundY; row < upperBoundY + 1; row++) {
+            if (grid[lowerBoundX][row] == Tileset.NOTHING) {
                 grid[lowerBoundX][row] = Tileset.WALL;
             }
-            if (lLX + width < WIDTH && grid[lLX + width][row] == Tileset.NOTHING) {
-                grid[lLX + width][row] = Tileset.WALL;
+            if (grid[upperBoundX][row] == Tileset.NOTHING) {
+                grid[upperBoundX][row] = Tileset.WALL;
             }
         }
     }
@@ -419,9 +423,10 @@ public class Engine {
      * @param room2
      */
     public static void addHallway(TETile[][] grid, Room room1, Room room2, Random rnd, TETile tile) {
-        int give = 1;
-        int widthLimit = Math.abs(room1.x - room2.x) + give;
-        int heightLimit = Math.abs(room1.y - room2.y) + give;
+        int widthGive = Math.max(room1.width, room2.width);
+        int heightGive = Math.max(room1.height, room2.height);
+        int widthLimit = Math.abs(room1.x - room2.x) + widthGive;
+        int heightLimit = Math.abs(room1.y - room2.y) + heightGive;
 
         int Y = (Math.abs(rnd.nextInt()) % room1.height) + room1.y;
         int X = (Math.abs(rnd.nextInt()) % room2.width) + room2.x;
