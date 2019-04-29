@@ -14,33 +14,15 @@ import java.util.Random;
 
 public class Engine {
     TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
+    TETile[][] gameGrid;
     private static final int WIDTH = 60;
     private static final int HEIGHT = 40;
 
-    // private static final long SEED = 287313;
-    // private static final Random RANDOM = new Random(SEED);
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
-
-    //TODO MORE DETAILED
-    private class Hero {
-        int x;
-        int y;
-        boolean hasKey = false;
-
-        public Hero(int xPos, int yPos) {
-            x = xPos;
-            y = yPos;
-        }
-
-        public void takeKey() {
-            hasKey = true;
-        }
-    }
 
     public void interactWithKeyboard() {
 
@@ -58,13 +40,13 @@ public class Engine {
 
     public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
         ter.initialize(WIDTH, HEIGHT);
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+        gameGrid = new TETile[WIDTH][HEIGHT];
 
 
         Object[] commands = generateSeed(input);
         // If seed could not be generated, return
         if (commands[0] == null || commands[1] == null) {
-            return finalWorldFrame;
+            return gameGrid;
         }
 
         Random rnd = (Random) commands[0];
@@ -72,17 +54,17 @@ public class Engine {
         int minGenFactor = (WIDTH + HEIGHT) / 10;
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
         Room[] rooms = new Room[numRooms];
-        createWorld(finalWorldFrame, rooms, rnd);
-        Hero hero = placeHero(finalWorldFrame, rnd);
+        createWorld(gameGrid, rooms, rnd);
+        Hero hero = placeHero(gameGrid, rnd);
 
         if (isLoad) {
             String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
-                keyboardInput(finalWorldFrame, rest.charAt(j), hero);
+                hero.play(rest.charAt(j));
             }
         }
 
-        ter.renderFrame(finalWorldFrame);
+        ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -97,8 +79,8 @@ public class Engine {
                         quitAndSave(input + userInput);
                     }
                     userInput += c;
-                    keyboardInput(finalWorldFrame, c, hero);
-                    ter.renderFrame(finalWorldFrame);
+                    hero.play(c);
+                    ter.renderFrame(gameGrid);
                 }
                 //TODO create a door/objective to reach
                 if (endReached) {
@@ -106,7 +88,7 @@ public class Engine {
                 }
             }
         }
-        return finalWorldFrame;
+        return gameGrid;
     }
 
     // Given all previous inputs and the latest key inserted, check
@@ -199,7 +181,7 @@ public class Engine {
                 validPoint = true;
             }
         }
-        return new Hero(x, y);
+        return new Hero(this, x, y);
     }
 
     /**
@@ -208,28 +190,7 @@ public class Engine {
      * @param grid  World to move on
      * @param input Given input character
      */
-    public void keyboardInput(TETile[][] grid, char input, Hero hero) {
-        switch (input) {
-            case 'W':
-            case 'w':
-                move(grid, 0, 1, hero);
-                break;
-            case 'A':
-            case 'a':
-                move(grid, -1, 0, hero);
-                break;
-            case 'S':
-            case 's':
-                move(grid, 0, -1, hero);
-                break;
-            case 'D':
-            case 'd':
-                move(grid, 1, 0, hero);
-                break;
-            default:
-                break;
-        }
-    }
+
     // TODO implement quit and save
 
     /**
@@ -241,15 +202,15 @@ public class Engine {
      * @param moveX Change in coordinate in X direction
      * @param moveY Change in coordinate in Y direction
      */
-    public static void move(TETile[][] grid, int moveX, int moveY, Hero hero) {
-        int hX = hero.x;
-        int hY = hero.y;
+    public static void move(TETile[][] grid, int moveX, int moveY, Player p) {
+        int hX = p.x;
+        int hY = p.y;
 
         if (grid[hX + moveX][hY + moveY] == Tileset.FLOOR) {
             grid[hX + moveX][hY + moveY] = Tileset.AVATAR;
             grid[hX][hY] = Tileset.FLOOR;
-            hero.x += moveX;
-            hero.y += moveY;
+            p.x += moveX;
+            p.y += moveY;
         } else {
             System.out.println("Invalid Move"); //TODO TAKE OUT LATER
         }
