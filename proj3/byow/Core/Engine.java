@@ -5,6 +5,10 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 public class Engine {
@@ -34,37 +38,110 @@ public class Engine {
 
     public void interactWithKeyboard() {
 
+        //TODO MAIN MENU FOR SEED GENERATION...
+        /**Random # of adversaries in rooms to walk completely/stochastically at random EACH TURN
+         * Add life to hero
+         * add a key that opens a door
+         * add Heads Up Display **/
+
+        Menu menu = new Menu(this, WIDTH, HEIGHT);
+        menu.initialize();
+        menu.run();
+
+    }
+
+    public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
         ter.initialize(WIDTH, HEIGHT);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
 
-        //TODO MAIN MENU FOR SEED GENERATION...
-        Random rnd = new Random(1234567);
+        char prefix = input.charAt(0);
+        String seedString = "";
+        int i = 1;
+        while (Character.isDigit(input.charAt(i))) {
+            seedString += input.charAt(i);
+            i += 1;
+        }
+        char endSeedChar = input.charAt(i);
+        String rest = input.substring(i + 1); // commands to execute
+
+        // Check prefix, suffix, and that input contains only digits.
+        if ((prefix != 'N' && prefix != 'n') || (endSeedChar != 'S'
+                && endSeedChar != 's') || !seedString.matches("\\d+")) {
+            return finalWorldFrame;
+        }
+        long seed = Long.parseLong(seedString);
+        System.out.println("Seed is: " + seed);
+        Random rnd = new Random(seed);
 
         int maxGenFactor = (WIDTH + HEIGHT) / 2;
         int minGenFactor = (WIDTH + HEIGHT) / 10;
-
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
-
         Room[] rooms = new Room[numRooms];
-
         createWorld(finalWorldFrame, rooms, rnd);
-        ter.renderFrame(finalWorldFrame);
+        Hero hero = placeHero(finalWorldFrame, rnd);
 
-        Hero hero = new Hero(3,5); //TODO initialize character in a random position within a valid position of the world
-        boolean endReached = false;
-        while (!endReached) {
-            if (StdDraw.hasNextKeyTyped()) {
-                char input = StdDraw.nextKeyTyped();
-                keyboardInput(finalWorldFrame, input, hero);
-                ter.renderFrame(finalWorldFrame);
-            }
-            //TODO create a door/objective to reach
-            if (endReached) {
-                endReached = !endReached;
+        if (isLoad) {
+            for (int j = 0; j < rest.length(); j++) {
+                keyboardInput(finalWorldFrame, rest.charAt(j), hero);
             }
         }
+
+        ter.renderFrame(finalWorldFrame);
+
+        // Only if keyboard is allowed
+        if (isKeyboard) {
+            boolean endReached = false;
+
+            String inputSequence = "";
+            while (!endReached) {
+                if (StdDraw.hasNextKeyTyped()) {
+                    char c = StdDraw.nextKeyTyped();
+                    if (inputSequence.length() > 0
+                            && inputSequence.charAt(inputSequence.length() - 1) == ':'
+                            && (c == 'q' || c == 'Q')) {
+                        inputSequence += c;
+                        quitAndSave(input + inputSequence);
+                    }
+                    inputSequence += c;
+                    keyboardInput(finalWorldFrame, c, hero);
+                    ter.renderFrame(finalWorldFrame);
+                }
+                //TODO create a door/objective to reach
+                if (endReached) {
+                    endReached = !endReached;
+                }
+            }
+        }
+        return finalWorldFrame;
     }
 
+    // TODO how to retrieve sequence of moves (String) from file?
+    public void loadSavedGame() {
+        // get list of commands from file
+        String savedInput = "";
+        // run startNewGame running the "rest" commands
+        runGame(savedInput, true, true);
+    }
+
+    // TODO how to save sequence of moves (String) to file?
+    private void quitAndSave(String s) {
+        System.out.println("This should quit and save with the following input: " + s);
+        System.exit(0);
+    }
+
+    private Hero placeHero(TETile[][] grid, Random rnd) {
+        boolean validPoint = false;
+        int x = 0, y = 0;
+        while (!validPoint) {
+            x = rnd.nextInt(WIDTH);
+            y = rnd.nextInt(HEIGHT);
+            if (grid[x][y] == Tileset.FLOOR) {
+                grid[x][y] = Tileset.AVATAR;
+                validPoint = true;
+            }
+        }
+        return new Hero(x,y);
+    }
     /**
      * Move character given "WASD" movement directions
      *
@@ -93,6 +170,7 @@ public class Engine {
                 break;
         }
     }
+    // TODO implement quit and save
 
     /**
      * Moves character to another adjacent tile given move direction and successfully moves if
@@ -146,37 +224,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        ter.initialize(WIDTH, HEIGHT);
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
-
-        char prefix = input.charAt(0);
-        char suffix = input.charAt(input.length() - 1);
-        String seedString = input.substring(1, input.length() - 1);
-
-        // Check prefix, suffix, and that input contains only digits.
-        if ((prefix != 'N' && prefix != 'n') || (suffix != 'S'
-                && suffix != 's') || !seedString.matches("\\d+")) {
-            return finalWorldFrame;
-        }
-
-        long seed = Long.parseLong(seedString);
-        System.out.println("Seed is: " + seed);
-        Random rnd = new Random(seed);
-
-        int maxGenFactor = (WIDTH + HEIGHT) / 2;
-        int minGenFactor = (WIDTH + HEIGHT) / 10;
-
-        // numRooms is a between minGenFactor to maxGenFactor
-        int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
-
-        // numHalls is a between numRooms to 2*numRooms
-        // int numHalls = (Math.abs(rnd.nextInt()) % numRooms) + numRooms;
-        Room[] rooms = new Room[numRooms];
-
-        createWorld(finalWorldFrame, rooms, rnd);
-        ter.renderFrame(finalWorldFrame);
-
-        return finalWorldFrame;
+        return runGame(input, false, true);
     }
 
     /**

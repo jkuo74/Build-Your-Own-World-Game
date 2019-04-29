@@ -43,6 +43,5 @@ public class Editor implements Serializable {
         StdDraw.text(midWidth, midHeight, words);
         StdDraw.text(midHeight, height - 1, m.getSheep());
         StdDraw.show();
-
     }
 }
