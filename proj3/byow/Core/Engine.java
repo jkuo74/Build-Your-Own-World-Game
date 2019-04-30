@@ -15,9 +15,13 @@ import java.util.Random;
 public class Engine {
     TERenderer ter = new TERenderer();
     TETile[][] gameGrid;
+    enum Direction
+    {
+        NORTH, SOUTH, EAST, WEST
+    }
     private static final int WIDTH = 60;
     private static final int HEIGHT = 40;
-
+    Player[] players;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -55,14 +59,24 @@ public class Engine {
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
         Room[] rooms = new Room[numRooms];
         createWorld(gameGrid, rooms, rnd);
-        Hero hero = placeHero(gameGrid, rnd);
+        Hero hero = placeHero(rnd);
 
+        // TODO save and load other players.
         if (isLoad) {
             String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 hero.play(rest.charAt(j));
             }
+        } else {
+            // TODO If didn't load players, Initialize players and random locations
+            // TODO num of players needs to be a soft function of number of floor tiles
+            int numOfPlayers = 5;
+            players = new Player[numOfPlayers];
+            for (int i = 0; i < numOfPlayers; i++) {
+                players[i] = placeWarrior(hero, rnd);
+            }
         }
+
 
         ter.renderFrame(gameGrid);
 
@@ -80,6 +94,9 @@ public class Engine {
                     }
                     userInput += c;
                     hero.play(c);
+                    for (Player w: players) {
+                        w.play(c);
+                    }
                     ter.renderFrame(gameGrid);
                 }
                 //TODO create a door/objective to reach
@@ -91,8 +108,14 @@ public class Engine {
         return gameGrid;
     }
 
-    // Given all previous inputs and the latest key inserted, check
-    // if quit sequence was pressed
+    /**
+     *  Given all previous inputs and the latest key inserted, check
+     *  if quit sequence was pressed
+     * @param c: very last char inputted by user
+     * @param s: sequence of previous inputs by user.
+     * @return
+     */
+
     private boolean quitSequence(char c, String s) {
         if (s.length() > 0 && s.charAt(s.length() - 1) == ':'
                 && (c == 'q' || c == 'Q')) {
@@ -100,7 +123,14 @@ public class Engine {
         }
         return false;
     }
-    // Function returns an array with Random object and "rest" string
+
+    /**
+     * Function returns an array with Random object and "rest" string.
+     * Used to initialize a word with an appropriate seed.
+     * @param input
+     * @return
+     */
+
     public Object[] generateSeed(String input) {
         Object[] result = new Object[2];
         char prefix = input.charAt(0);
@@ -125,6 +155,10 @@ public class Engine {
         return result;
     }
 
+    /**
+     * Load saved game by loading the string of inputs previously
+     * entered by user and creating a new game with these inputs.
+     */
     // @Source: Editor class
     public void loadSavedGame() {
         String savedInput = "";
@@ -149,6 +183,10 @@ public class Engine {
         }
     }
 
+    /**
+     * Save file by writing the string of input sequence to a file.
+     * @param s: string of all user input including seed
+     */
     // @Source: Editor class
     private void quitAndSave(String s) {
         File f = new File("./save.txt");
@@ -170,20 +208,126 @@ public class Engine {
         System.exit(0);
     }
 
-    private Hero placeHero(TETile[][] grid, Random rnd) {
+    /**
+     * Find a valid coordinate to place the hero, initialize at this coordinate
+     * and return
+     * @param rnd
+     * @return a new Hero
+     */
+    private Hero placeHero(Random rnd) {
         boolean validPoint = false;
         int x = 0, y = 0;
         while (!validPoint) {
             x = rnd.nextInt(WIDTH);
             y = rnd.nextInt(HEIGHT);
-            if (grid[x][y] == Tileset.FLOOR) {
-                grid[x][y] = Tileset.AVATAR;
+            if (gameGrid[x][y] == Tileset.FLOOR) {
+                gameGrid[x][y] = Tileset.INDIANA;
                 validPoint = true;
             }
         }
-        return new Hero(this, x, y);
+        return new Hero(this, x, y, rnd);
     }
 
+    /**
+     * Find a valid coordinate to place a warrior, initialize at this coordinate
+     * and return
+     * @param rnd
+     * @return a new Hero
+     */
+    private Warrior placeWarrior(Hero h, Random rnd) {
+        boolean validPoint = false;
+        int x = 0, y = 0;
+        while (!validPoint) {
+            x = rnd.nextInt(WIDTH);
+            y = rnd.nextInt(HEIGHT);
+            if (gameGrid[x][y] == Tileset.FLOOR) {
+                gameGrid[x][y] = Tileset.WARRIOR;
+                validPoint = true;
+            }
+        }
+        return new Warrior(this, x, y, rnd, h);
+    }
+
+    /**
+     * Hero can shoot enemies in a range of 3 steps.  Hits with .66 chance.
+     * Effectively, function will look for a range of 3 tiles in the
+     * direction specified, and if a warrior is spotted, it will hit them.
+     * @param p - hero
+     * @return If some creature was shot or not
+     */
+    // TODO: Remove print statements.
+    public boolean shoot(Player p, Direction dir, Random rnd) {
+        int range = 3;
+        double probability = .67;
+        // shot misses with .33 probability
+        if (rnd.nextDouble() > probability) {
+            System.out.println("Shooting falied stochastically");
+            return false;
+        }
+
+        boolean hit = false;
+        switch(dir) {
+            case NORTH:
+                for (int i = 1; i < range + 1; i++) {
+                    if (p.y + i > HEIGHT - 1) {
+                        System.out.println("Shooting exceeded limits upwards");
+                        break;
+                    }
+                    if (gameGrid[p.x][p.y + i] == Tileset.WARRIOR) {
+                        hitWarrior(p.x, p.y + i);
+                        System.out.println("Warrior hit up!");
+                        hit = true;
+                    }
+                }
+                break;
+            case SOUTH:
+                for (int i = 1; i < range + 1; i++) {
+                    if (p.y - i < 0) {
+                        System.out.println("Shooting exceeded limits downwards");
+                        break;
+                    }
+                    if (gameGrid[p.x][p.y - i] == Tileset.WARRIOR) {
+                        hitWarrior(p.x, p.y - i);
+                        System.out.println("Warrior hit down!");
+                        hit = true;
+                    }
+                }
+                break;
+            case EAST:
+                for (int i = 1; i < range + 1; i++) {
+                    if (p.x + i > WIDTH - 1) {
+                        System.out.println("Shooting exceeded limits rightwards");
+                        break;
+                    }
+                    if (gameGrid[p.x + i][p.y] == Tileset.WARRIOR) {
+                        hitWarrior(p.x + i, p.y);
+                        System.out.println("Warrior hit right!");
+
+                        hit = true;
+                    }
+                }
+                break;
+            case WEST:
+                for (int i = 1; i < range + 1; i++) {
+                    if (p.x + i < 0) {
+                        System.out.println("Shooting exceeded limits leftwards");
+                        break;
+                    }
+                    if (gameGrid[p.x - i][p.y] == Tileset.WARRIOR) {
+                        hitWarrior(p.x - i, p.y);
+                        System.out.println("Warrior hit left!");
+                        hit = true;
+                    }
+                }
+                break;
+        }
+        return hit;
+    }
+
+    // Hit a warrior at x, y.
+    private void hitWarrior(int x, int y) {
+
+    }
     /**
      * Move character given "WASD" movement directions
      *
@@ -191,24 +335,29 @@ public class Engine {
      * @param input Given input character
      */
 
-    // TODO implement quit and save
-
     /**
      * Moves character to another adjacent tile given move direction and successfully moves if
      * coordinate is a floor. Update character's position if move is successful. Assumes coordinate
      * moving to is always in bounds of the grid
      *
-     * @param grid  World to move on
      * @param moveX Change in coordinate in X direction
      * @param moveY Change in coordinate in Y direction
      */
-    public static void move(TETile[][] grid, int moveX, int moveY, Player p) {
+    public void move(int moveX, int moveY, Player p) {
         int hX = p.x;
         int hY = p.y;
+        TETile avatar;
+        if (p instanceof Hero) {
+            avatar = Tileset.INDIANA;
+        } else if (p instanceof Warrior) {
+            avatar = Tileset.WARRIOR;
+        } else {
+            avatar = Tileset.AVATAR;
+        }
 
-        if (grid[hX + moveX][hY + moveY] == Tileset.FLOOR) {
-            grid[hX + moveX][hY + moveY] = Tileset.AVATAR;
-            grid[hX][hY] = Tileset.FLOOR;
+        if (gameGrid[hX + moveX][hY + moveY] == Tileset.FLOOR) {
+            gameGrid[hX + moveX][hY + moveY] = avatar;
+            gameGrid[hX][hY] = Tileset.FLOOR;
             p.x += moveX;
             p.y += moveY;
         } else {

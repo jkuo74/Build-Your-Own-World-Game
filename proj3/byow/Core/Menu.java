@@ -29,14 +29,16 @@ public class Menu {
 
     public void showMainMenu() {
         int midWidth = width / 2;
-        int titleHeight = height - 1;
-        int firstHeight = height * 3 / 5;
+        int titleHeight = height * 4 / 5;
+        int firstHeight = height / 2;
         int secondHeight = firstHeight - 3;
         int thirdHeight = secondHeight - 3;
 
         StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setFont(new Font("Monaco", Font.BOLD, 30));
         StdDraw.text(midWidth, titleHeight, "Welcome to KP World!");
+        StdDraw.setFont(new Font("Monaco", Font.BOLD, 18));
         StdDraw.text(midWidth, firstHeight, "New Game (N)");
         StdDraw.text(midWidth, secondHeight, "Load Game (L)");
         StdDraw.text(midWidth, thirdHeight, "Quit (Q)");
@@ -45,7 +47,7 @@ public class Menu {
 
     public void newGameMenu() {
         int midWidth = width / 2;
-        int titleHeight = height - 1;
+        int titleHeight = height * 4 / 5;
         int midHeight = height / 2 ;
 
 
