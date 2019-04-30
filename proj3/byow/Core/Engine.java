@@ -18,12 +18,14 @@ public class Engine {
         NORTH, SOUTH, EAST, WEST
     }
 
-    private static final int WIDTH = 60;
+    private static final int WIDTH = 70;
     private static final int HEIGHT = 40;
     Player[] players;
     Element Door;
     boolean endGame = false;
     Random rng;
+    HashMap<Integer, Coordinate> floorMap = new HashMap<>();
+    HashMap<Integer, Coordinate> wallMap = new HashMap<>();
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -61,15 +63,14 @@ public class Engine {
         int numRooms = (Math.abs(rng.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
         Room[] rooms = new Room[numRooms];
         createWorld(rooms);
-
-        HashMap<Integer, Coordinate>[] maps = makeMap();
-        HashMap<Integer, Coordinate> floorMap = maps[0];
-        HashMap<Integer, Coordinate> wallMap = maps[1];
-
-
-        Hero hero = placeHero(floorMap);
+        generateMaps();
+        int numKeys = Math.max(4, rng.nextInt(floorMap.size() / 50));
+        Hero hero = placeHero(numKeys);
         Door = placeElement(wallMap, Tileset.LOCKED_DOOR);
-        placeElement(floorMap, Tileset.TREE);
+        for (int n = 0; n < numKeys; n++) {
+            placeElement(floorMap, Tileset.TREE);
+
+        }
 
         // TODO save and load other players.
         if (isLoad) {
@@ -86,7 +87,6 @@ public class Engine {
                 players[i] = placeWarrior(hero);
             }
         }
-
 
         ter.renderFrame(gameGrid);
 
@@ -138,7 +138,6 @@ public class Engine {
      * @param input
      * @return
      */
-
     public Object[] generateSeed(String input) {
         Object[] result = new Object[2];
         char prefix = input.charAt(0);
@@ -223,11 +222,11 @@ public class Engine {
      *
      * @return a new Hero
      */
-    private Hero placeHero(HashMap<Integer, Coordinate> floors) {
-        int place = rng.nextInt(floors.size());
-        Coordinate coord = floors.get(place);
+    private Hero placeHero(int numKeys) {
+        int place = rng.nextInt(floorMap.size());
+        Coordinate coord = floorMap.get(place);
         gameGrid[coord.getX()][coord.getY()] = Tileset.INDIANA;
-        return new Hero(this, Tileset.INDIANA, coord.copy(), rng);
+        return new Hero(this, Tileset.INDIANA, coord.copy(), rng, numKeys);
     }
 
     /**
@@ -250,17 +249,11 @@ public class Engine {
      * @return a new Hero
      */
     private Warrior placeWarrior(Hero h) {
-        boolean validPoint = false;
-        int x = 0, y = 0;
-        while (!validPoint) {
-            x = rng.nextInt(WIDTH);
-            y = rng.nextInt(HEIGHT);
-            if (gameGrid[x][y] == Tileset.FLOOR) {
-                gameGrid[x][y] = Tileset.WARRIOR;
-                validPoint = true;
-            }
-        }
-        return new Warrior(this, Tileset.WARRIOR, new Coordinate(x, y), rng, h);
+        int place = rng.nextInt(floorMap.size());
+        Coordinate coord = floorMap.get(place);
+        gameGrid[coord.getX()][coord.getY()] = Tileset.WARRIOR;
+
+        return new Warrior(this, Tileset.WARRIOR, coord.copy(), rng, h);
     }
 
     /**
@@ -372,9 +365,9 @@ public class Engine {
         }
         if (avatar == Tileset.INDIANA) {
             Hero indy = (Hero) p;
-            if (!indy.hasKey()) {
+            if (!indy.hasAllKeys()) {
                 pickUpKey(pX + moveX, pY + moveY, indy);
-                if (indy.hasKey()) {
+                if (indy.hasAllKeys()) {
                     Door.id = Tileset.UNLOCKED_DOOR;
                     gameGrid[Door.getX()][Door.getY()] = Door.id;
                 }
@@ -391,11 +384,15 @@ public class Engine {
             gameGrid[pX][pY] = Tileset.FLOOR;
             p.setCoords(pX + moveX, pY + moveY);
 
-        } else {
-            System.out.println("Invalid Move"); //TODO TAKE OUT LATER
         }
     }
 
+    /**
+     * If the coordinate to be moved to is a key then have the hero pick it up
+     * @param x
+     * @param y
+     * @param hero
+     */
     public void pickUpKey(int x, int y, Hero hero) {
         if (gameGrid[x][y] == Tileset.TREE) {
             hero.takeKey();
@@ -603,22 +600,22 @@ public class Engine {
         }
     }
 
-    public HashMap<Integer, Coordinate>[] makeMap() {
-        HashMap<Integer, Coordinate>[] maps = new HashMap[2];
-        maps[0] = new HashMap<>();
-        maps[1] = new HashMap<>();
-
+    /**
+     * Generates floorMap and wallMap. All points in the grid that are floors are added in the
+     * floorMap. All points in the grid that are walls and is adjacent to a floor is added to the
+     * wallMap.
+     */
+    public void generateMaps() {
         for (int col = 0; col < gameGrid.length; col++) {
             for (int row = 0; row < gameGrid[0].length; row++) {
                 if (gameGrid[col][row] == Tileset.FLOOR) {
-                    maps[0].put(maps[0].size(), new Coordinate(col, row));
+                    floorMap.put(floorMap.size(), new Coordinate(col, row));
                 } else if (gameGrid[col][row] == Tileset.WALL &&
                         checkBoundary(new Room(Tileset.FLOOR, col, row, 1, 1), Tileset.FLOOR) &&
                         checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1), Tileset.NOTHING)) {
-                    maps[1].put(maps[1].size(), new Coordinate(col, row));
+                    wallMap.put(wallMap.size(), new Coordinate(col, row));
                 }
             }
         }
-        return maps;
     }
 }

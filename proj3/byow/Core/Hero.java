@@ -5,21 +5,21 @@ import byow.TileEngine.TETile;
 import java.util.Random;
 
 public class Hero extends Player {
-    boolean hasKey;
+    int numKeys;
     int health;
 
-    public Hero(Engine e, TETile tile, Coordinate c, Random r) {
+    public Hero(Engine e, TETile tile, Coordinate c, Random r, int numKeys) {
         super(e, tile, c, r);
-        hasKey = false;
+        this.numKeys = numKeys;
         health = 4;
     }
 
     public void takeKey() {
-        hasKey = true;
+        numKeys--;
     }
 
-    public boolean hasKey() {
-        return hasKey;
+    public boolean hasAllKeys() {
+        return numKeys == 0;
     }
 
     public void play(char c) {
