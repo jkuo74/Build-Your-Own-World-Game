@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="85a03929-3cb2-488e-9bb0-9b99cde7ac9f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/byow/Core/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Hero.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Hero.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Player.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Room.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Room.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Warrior.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Warrior.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -98,8 +94,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="880">
-                  <caret line="402" column="27" lean-forward="true" selection-start-line="402" selection-start-column="27" selection-end-line="402" selection-end-column="27" />
+                <state relative-caret-position="174">
+                  <caret line="85" column="46" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
                 </state>
               </provider>
             </entry>
@@ -124,6 +120,7 @@
       <find>hY</find>
       <find>hX</find>
       <find>ava</find>
+      <find>rnd</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -257,13 +254,13 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.10857763" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.28338763" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Style Checker" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.32899022" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
       <window_info anchor="bottom" id="Messages" order="11" weight="0.32899022" />
@@ -389,8 +386,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="880">
-          <caret line="402" column="27" lean-forward="true" selection-start-line="402" selection-start-column="27" selection-end-line="402" selection-end-column="27" />
+        <state relative-caret-position="174">
+          <caret line="85" column="46" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
         </state>
       </provider>
     </entry>

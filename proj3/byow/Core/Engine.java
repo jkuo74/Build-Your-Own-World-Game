@@ -23,6 +23,7 @@ public class Engine {
     Player[] players;
     Element Door;
     boolean endGame = false;
+    Random rng;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -54,21 +55,21 @@ public class Engine {
             return gameGrid;
         }
 
-        Random rnd = (Random) commands[0];
+        rng = (Random) commands[0];
         int maxGenFactor = (WIDTH + HEIGHT) / 2;
         int minGenFactor = (WIDTH + HEIGHT) / 10;
-        int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
+        int numRooms = (Math.abs(rng.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
         Room[] rooms = new Room[numRooms];
-        createWorld(rooms, rnd);
+        createWorld(rooms);
 
         HashMap<Integer, Coordinate>[] maps = makeMap();
         HashMap<Integer, Coordinate> floorMap = maps[0];
         HashMap<Integer, Coordinate> wallMap = maps[1];
 
 
-        Hero hero = placeHero(floorMap, rnd);
-        Door = placeElement(wallMap, rnd, Tileset.LOCKED_DOOR);
-        placeElement(floorMap, rnd, Tileset.TREE);
+        Hero hero = placeHero(floorMap);
+        Door = placeElement(wallMap, Tileset.LOCKED_DOOR);
+        placeElement(floorMap, Tileset.TREE);
 
         // TODO save and load other players.
         if (isLoad) {
@@ -82,7 +83,7 @@ public class Engine {
             int numOfPlayers = 5;
             players = new Player[numOfPlayers];
             for (int i = 0; i < numOfPlayers; i++) {
-                players[i] = placeWarrior(hero, rnd);
+                players[i] = placeWarrior(hero);
             }
         }
 
@@ -220,25 +221,23 @@ public class Engine {
      * Find a valid coordinate to place the hero, initialize at this coordinate
      * and return
      *
-     * @param rnd
      * @return a new Hero
      */
-    private Hero placeHero(HashMap<Integer, Coordinate> floors, Random rnd) {
-        int place = rnd.nextInt(floors.size());
+    private Hero placeHero(HashMap<Integer, Coordinate> floors) {
+        int place = rng.nextInt(floors.size());
         Coordinate coord = floors.get(place);
         gameGrid[coord.getX()][coord.getY()] = Tileset.INDIANA;
-        return new Hero(this, Tileset.INDIANA, coord.copy(), rnd);
+        return new Hero(this, Tileset.INDIANA, coord.copy(), rng);
     }
 
     /**
      * Finds a valid coordinate to place element on given set of tiles
      * @param tiles Valid tiles to initialize elements on
-     * @param rnd
      * @param tile
      * @return
      */
-    private Element placeElement(HashMap<Integer, Coordinate> tiles, Random rnd, TETile tile) {
-        int place = rnd.nextInt(tiles.size());
+    private Element placeElement(HashMap<Integer, Coordinate> tiles, TETile tile) {
+        int place = rng.nextInt(tiles.size());
         Coordinate coord = tiles.get(place);
         gameGrid[coord.getX()][coord.getY()] = tile;
         return new Element(tile, coord.copy());
@@ -248,21 +247,20 @@ public class Engine {
      * Find a valid coordinate to place a warrior, initialize at this coordinate
      * and return
      *
-     * @param rnd
      * @return a new Hero
      */
-    private Warrior placeWarrior(Hero h, Random rnd) {
+    private Warrior placeWarrior(Hero h) {
         boolean validPoint = false;
         int x = 0, y = 0;
         while (!validPoint) {
-            x = rnd.nextInt(WIDTH);
-            y = rnd.nextInt(HEIGHT);
+            x = rng.nextInt(WIDTH);
+            y = rng.nextInt(HEIGHT);
             if (gameGrid[x][y] == Tileset.FLOOR) {
                 gameGrid[x][y] = Tileset.WARRIOR;
                 validPoint = true;
             }
         }
-        return new Warrior(this, Tileset.WARRIOR, new Coordinate(x, y), rnd, h);
+        return new Warrior(this, Tileset.WARRIOR, new Coordinate(x, y), rng, h);
     }
 
     /**
@@ -274,11 +272,11 @@ public class Engine {
      * @return If some creature was shot or not
      */
     // TODO: Remove print statements.
-    public boolean shoot(Player p, Direction dir, Random rnd) {
+    public boolean shoot(Player p, Direction dir, Random rng) {
         int range = 3;
         double probability = .67;
         // shot misses with .33 probability
-        if (rnd.nextDouble() > probability) {
+        if (rng.nextDouble() > probability) {
             System.out.println("Shooting falied stochastically");
             return false;
         }
@@ -444,10 +442,9 @@ public class Engine {
      * HEIGHT and WIDTH over 16 CAN CHANGE
      * 4) Connect initialized room wiht previously initialized room if it is not already connected
      *
-     * @param grid  World to create on.
      * @param rooms Room to create.
      */
-    public void createWorld(Room[] rooms, Random rnd) {
+    public void createWorld(Room[] rooms) {
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 gameGrid[x][y] = Tileset.NOTHING;
@@ -458,12 +455,12 @@ public class Engine {
         TETile roomTile = Tileset.FLOOR;
         TETile hallwayTile = Tileset.FLOOR;
         for (int n = 0; n < rooms.length; n++) {
-            int width = Math.abs(rnd.nextInt()) % limit + 2;
-            int height = Math.abs(rnd.nextInt()) % limit + 2;
-            rooms[n] = addRoom(width, height, rnd, roomTile);
+            int width = Math.abs(rng.nextInt()) % limit + 2;
+            int height = Math.abs(rng.nextInt()) % limit + 2;
+            rooms[n] = addRoom(width, height, roomTile);
             if (n != 0 && !checkBoundary(rooms[n], roomTile)
                     && !checkBoundary(rooms[n], hallwayTile)) {
-                connectRooms(rooms[n - 1], rooms[n], rnd, hallwayTile);
+                connectRooms(rooms[n - 1], rooms[n], hallwayTile);
             }
         }
     }
@@ -549,9 +546,9 @@ public class Engine {
      * @param height Height of the area to be created
      * @return Returns initialized Room object
      */
-    public Room addRoom(int width, int height, Random rnd, TETile tile) {
-        int lLX = Math.max(1, Math.abs(rnd.nextInt()) % (WIDTH - width - 1));
-        int lLY = Math.max(1, Math.abs(rnd.nextInt()) % (HEIGHT - height - 1));
+    public Room addRoom(int width, int height, TETile tile) {
+        int lLX = Math.max(1, Math.abs(rng.nextInt()) % (WIDTH - width - 1));
+        int lLY = Math.max(1, Math.abs(rng.nextInt()) % (HEIGHT - height - 1));
         addArea(lLX, lLY, width, height, tile);
         return new Room(tile, lLX, lLY, width, height);
     }
@@ -565,15 +562,15 @@ public class Engine {
      * @param room1
      * @param room2
      */
-    public void connectRooms(Room room1, Room room2, Random rnd, TETile tile) {
+    public void connectRooms(Room room1, Room room2, TETile tile) {
         Room leftMost = (room1.getX() < room2.getX()) ? room1 : room2;
         Room rightMost = (leftMost == room1) ? room2 : room1;
 
-        boolean orientation = rnd.nextBoolean();
+        boolean orientation = rng.nextBoolean();
         if (orientation) {
-            addHallway(leftMost, rightMost, rnd, tile);
+            addHallway(leftMost, rightMost, tile);
         } else {
-            addHallway(rightMost, leftMost, rnd, tile);
+            addHallway(rightMost, leftMost, tile);
         }
     }
 
@@ -585,14 +582,14 @@ public class Engine {
      * @param room1
      * @param room2
      */
-    public void addHallway(Room room1, Room room2, Random rnd, TETile tile) {
+    public void addHallway(Room room1, Room room2, TETile tile) {
         int widthGive = Math.max(room1.getWidth(), room2.getWidth());
         int heightGive = Math.max(room1.getHeight(), room2.getHeight());
         int widthLimit = Math.abs(room1.getX() - room2.getX()) + widthGive;
         int heightLimit = Math.abs(room1.getY() - room2.getY()) + heightGive;
 
-        int Y = (Math.abs(rnd.nextInt()) % room1.getHeight()) + room1.getY();
-        int X = (Math.abs(rnd.nextInt()) % room2.getWidth()) + room2.getX();
+        int Y = (Math.abs(rng.nextInt()) % room1.getHeight()) + room1.getY();
+        int X = (Math.abs(rng.nextInt()) % room2.getWidth()) + room2.getX();
 
         if (room1.getX() > room2.getX()) {
             addArea(Math.max(1, room1.getX() - widthLimit), Y, widthLimit, 1, tile);
