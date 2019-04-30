@@ -8,6 +8,7 @@ public class Element {
 
     public Element(TETile tile, Coordinate c) {
         coord = c;
+        id = tile;
     }
 
     public int getX() {
@@ -21,5 +22,9 @@ public class Element {
     public void setCoords(int x, int y) {
         coord.setX(x);
         coord.setY(y);
+    }
+
+    public TETile getID() {
+        return id;
     }
 }

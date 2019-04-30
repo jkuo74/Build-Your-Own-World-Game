@@ -231,6 +231,7 @@ public class Engine {
 
     /**
      * Finds a valid coordinate to place element on given set of tiles
+     *
      * @param tiles Valid tiles to initialize elements on
      * @param tile
      * @return
@@ -355,15 +356,8 @@ public class Engine {
     public void move(int moveX, int moveY, Player p) {
         int pX = p.getX();
         int pY = p.getY();
-        TETile avatar;
-        if (p instanceof Hero) {
-            avatar = Tileset.INDIANA;
-        } else if (p instanceof Warrior) {
-            avatar = Tileset.WARRIOR;
-        } else {
-            avatar = Tileset.AVATAR;
-        }
-        if (avatar == Tileset.INDIANA) {
+
+        if (p.getID() == Tileset.INDIANA) {
             Hero indy = (Hero) p;
             if (!indy.hasAllKeys()) {
                 pickUpKey(pX + moveX, pY + moveY, indy);
@@ -380,7 +374,7 @@ public class Engine {
         }
 
         if (gameGrid[pX + moveX][pY + moveY] == Tileset.FLOOR) {
-            gameGrid[pX + moveX][pY + moveY] = avatar;
+            gameGrid[pX + moveX][pY + moveY] = p.getID();
             gameGrid[pX][pY] = Tileset.FLOOR;
             p.setCoords(pX + moveX, pY + moveY);
 
@@ -389,6 +383,7 @@ public class Engine {
 
     /**
      * If the coordinate to be moved to is a key then have the hero pick it up
+     *
      * @param x
      * @param y
      * @param hero
@@ -469,7 +464,7 @@ public class Engine {
      * @param tile Tile to look for around the room
      * @return Returns true if tile found, false if not
      */
-    public  boolean checkBoundary(Room room, TETile tile) {
+    public boolean checkBoundary(Room room, TETile tile) {
         int roomX = room.getX();
         int roomY = room.getY();
         int roomHeight = room.getHeight();
@@ -502,7 +497,7 @@ public class Engine {
      * @param height Height of the area to be created
      */
     public void addArea(int lLX, int lLY,
-                               int width, int height, TETile tile) {
+                        int width, int height, TETile tile) {
         for (int row = Math.max(1, lLY); row < lLY + height && row < HEIGHT - 1; row++) {
             for (int col = Math.max(1, lLX); col < lLX + width && col < WIDTH - 1; col++) {
                 gameGrid[col][row] = tile;
