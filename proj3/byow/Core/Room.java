@@ -1,37 +1,23 @@
 package byow.Core;
 
-import java.util.HashSet;
+import byow.TileEngine.TETile;
 
-public class Room {
-    private final int maxHallways = 8;
-    int x;
-    int y;
-    int width;
-    int height;
-    long id;
-    int hallways;
-    HashSet<Long> roomsConnected;
+public class Room extends Element {
+    private int width;
+    private int height;
 
-    public Room(int x, int y, int w, int h, long id) {
-        this.x = x;
-        this.y = y;
+    public Room(TETile tile, int x, int y, int w, int h) {
+        super(tile, new Coordinate(x, y));
         this.width = w;
         this.height = h;
-        this.id = id;
-        roomsConnected = new HashSet<>();
     }
-    public long getId() {
-        return id;
+
+    public int getWidth() {
+        return width;
     }
-    public int getNumHallways() {
-        return hallways;
+
+    public int getHeight() {
+        return height;
     }
-    public boolean connectToRoom(Long roomId) {
-        if (roomsConnected.size() < maxHallways && !roomsConnected.contains(roomId)) {
-            roomsConnected.add(roomId);
-            hallways += 1;
-            return true;
-        }
-        return false;
-    }
+
 }

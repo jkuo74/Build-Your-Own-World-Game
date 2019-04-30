@@ -1,13 +1,15 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
+
 import java.util.Random;
 
 public class Warrior extends Player {
     int health;
     Hero hero;
 
-    public Warrior(Engine e, int xPos, int yPos, Random r, Hero h) {
-        super(e, xPos,yPos, r);
+    public Warrior(Engine e, TETile tile, Coordinate c, Random r, Hero h) {
+        super(e, tile, c, r);
         health = 2;
         this.hero = h;
     }

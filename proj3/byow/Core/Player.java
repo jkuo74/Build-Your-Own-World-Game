@@ -1,25 +1,24 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
+
 import java.util.Random;
 
-public abstract class Player {
-    int x;
-    int y;
+public abstract class Player extends Element{
     int health = 2;
     Engine engine;
     Random rnd;
 
-    public Player(Engine e, int xPos, int yPos, Random r) {
+    public Player(Engine e, TETile tile, Coordinate c, Random r) {
+        super(tile, c);
         engine = e;
-        x = xPos;
-        y = yPos;
         rnd = r;
     }
 
     abstract public void play(char c);
 
     public void takeHit() {
-        health --;
+        health--;
     }
 
     public boolean isDead() {
@@ -27,7 +26,7 @@ public abstract class Player {
     }
 
     public int manhattanDistance(Player p1, Player p2) {
-        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+        return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getY() - p2.getY());
     }
 
     public void move(Engine.Direction dir) {

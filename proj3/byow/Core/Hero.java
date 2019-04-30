@@ -1,13 +1,15 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
+
 import java.util.Random;
 
 public class Hero extends Player {
     boolean hasKey;
     int health;
 
-    public Hero(Engine e, int xPos, int yPos, Random r) {
-        super(e, xPos,yPos, r);
+    public Hero(Engine e, TETile tile, Coordinate c, Random r) {
+        super(e, tile, c, r);
         hasKey = false;
         health = 4;
     }

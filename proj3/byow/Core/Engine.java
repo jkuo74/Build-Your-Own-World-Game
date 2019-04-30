@@ -7,21 +7,22 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Queue;
-import java.util.Random;
 
 public class Engine {
     TERenderer ter = new TERenderer();
     TETile[][] gameGrid;
-    enum Direction
-    {
+
+    enum Direction {
         NORTH, SOUTH, EAST, WEST
     }
+
     private static final int WIDTH = 60;
     private static final int HEIGHT = 40;
     Player[] players;
+    Element Door;
+    boolean endGame = false;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -58,8 +59,16 @@ public class Engine {
         int minGenFactor = (WIDTH + HEIGHT) / 10;
         int numRooms = (Math.abs(rnd.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
         Room[] rooms = new Room[numRooms];
-        createWorld(gameGrid, rooms, rnd);
-        Hero hero = placeHero(rnd);
+        createWorld(rooms, rnd);
+
+        HashMap<Integer, Coordinate>[] maps = makeMap();
+        HashMap<Integer, Coordinate> floorMap = maps[0];
+        HashMap<Integer, Coordinate> wallMap = maps[1];
+
+
+        Hero hero = placeHero(floorMap, rnd);
+        Door = placeElement(wallMap, rnd, Tileset.LOCKED_DOOR);
+        placeElement(floorMap, rnd, Tileset.TREE);
 
         // TODO save and load other players.
         if (isLoad) {
@@ -82,10 +91,9 @@ public class Engine {
 
         // Only if keyboard is allowed
         if (isKeyboard) {
-            boolean endReached = false;
 
             String userInput = "";
-            while (!endReached) {
+            while (!endGame) {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
                     if (quitSequence(c, userInput)) {
@@ -94,23 +102,21 @@ public class Engine {
                     }
                     userInput += c;
                     hero.play(c);
-                    for (Player w: players) {
+                    for (Player w : players) {
                         w.play(c);
                     }
                     ter.renderFrame(gameGrid);
                 }
-                //TODO create a door/objective to reach
-                if (endReached) {
-                    endReached = !endReached;
-                }
+
             }
         }
         return gameGrid;
     }
 
     /**
-     *  Given all previous inputs and the latest key inserted, check
-     *  if quit sequence was pressed
+     * Given all previous inputs and the latest key inserted, check
+     * if quit sequence was pressed
+     *
      * @param c: very last char inputted by user
      * @param s: sequence of previous inputs by user.
      * @return
@@ -127,6 +133,7 @@ public class Engine {
     /**
      * Function returns an array with Random object and "rest" string.
      * Used to initialize a word with an appropriate seed.
+     *
      * @param input
      * @return
      */
@@ -185,6 +192,7 @@ public class Engine {
 
     /**
      * Save file by writing the string of input sequence to a file.
+     *
      * @param s: string of all user input including seed
      */
     // @Source: Editor class
@@ -211,26 +219,35 @@ public class Engine {
     /**
      * Find a valid coordinate to place the hero, initialize at this coordinate
      * and return
+     *
      * @param rnd
      * @return a new Hero
      */
-    private Hero placeHero(Random rnd) {
-        boolean validPoint = false;
-        int x = 0, y = 0;
-        while (!validPoint) {
-            x = rnd.nextInt(WIDTH);
-            y = rnd.nextInt(HEIGHT);
-            if (gameGrid[x][y] == Tileset.FLOOR) {
-                gameGrid[x][y] = Tileset.INDIANA;
-                validPoint = true;
-            }
-        }
-        return new Hero(this, x, y, rnd);
+    private Hero placeHero(HashMap<Integer, Coordinate> floors, Random rnd) {
+        int place = rnd.nextInt(floors.size());
+        Coordinate coord = floors.get(place);
+        gameGrid[coord.getX()][coord.getY()] = Tileset.INDIANA;
+        return new Hero(this, Tileset.INDIANA, coord.copy(), rnd);
+    }
+
+    /**
+     * Finds a valid coordinate to place element on given set of tiles
+     * @param tiles Valid tiles to initialize elements on
+     * @param rnd
+     * @param tile
+     * @return
+     */
+    private Element placeElement(HashMap<Integer, Coordinate> tiles, Random rnd, TETile tile) {
+        int place = rnd.nextInt(tiles.size());
+        Coordinate coord = tiles.get(place);
+        gameGrid[coord.getX()][coord.getY()] = tile;
+        return new Element(tile, coord.copy());
     }
 
     /**
      * Find a valid coordinate to place a warrior, initialize at this coordinate
      * and return
+     *
      * @param rnd
      * @return a new Hero
      */
@@ -245,13 +262,14 @@ public class Engine {
                 validPoint = true;
             }
         }
-        return new Warrior(this, x, y, rnd, h);
+        return new Warrior(this, Tileset.WARRIOR, new Coordinate(x, y), rnd, h);
     }
 
     /**
      * Hero can shoot enemies in a range of 3 steps.  Hits with .66 chance.
      * Effectively, function will look for a range of 3 tiles in the
      * direction specified, and if a warrior is spotted, it will hit them.
+     *
      * @param p - hero
      * @return If some creature was shot or not
      */
@@ -266,15 +284,15 @@ public class Engine {
         }
 
         boolean hit = false;
-        switch(dir) {
+        switch (dir) {
             case NORTH:
                 for (int i = 1; i < range + 1; i++) {
-                    if (p.y + i > HEIGHT - 1) {
+                    if (p.getY() + i > HEIGHT - 1) {
                         System.out.println("Shooting exceeded limits upwards");
                         break;
                     }
-                    if (gameGrid[p.x][p.y + i] == Tileset.WARRIOR) {
-                        hitWarrior(p.x, p.y + i);
+                    if (gameGrid[p.getX()][p.getY() + i] == Tileset.WARRIOR) {
+                        hitWarrior(p.getX(), p.getY() + i);
                         System.out.println("Warrior hit up!");
                         hit = true;
                     }
@@ -282,12 +300,12 @@ public class Engine {
                 break;
             case SOUTH:
                 for (int i = 1; i < range + 1; i++) {
-                    if (p.y - i < 0) {
+                    if (p.getY() - i < 0) {
                         System.out.println("Shooting exceeded limits downwards");
                         break;
                     }
-                    if (gameGrid[p.x][p.y - i] == Tileset.WARRIOR) {
-                        hitWarrior(p.x, p.y - i);
+                    if (gameGrid[p.getX()][p.getY() - i] == Tileset.WARRIOR) {
+                        hitWarrior(p.getX(), p.getY() - i);
                         System.out.println("Warrior hit down!");
                         hit = true;
                     }
@@ -295,12 +313,12 @@ public class Engine {
                 break;
             case EAST:
                 for (int i = 1; i < range + 1; i++) {
-                    if (p.x + i > WIDTH - 1) {
+                    if (p.getX() + i > WIDTH - 1) {
                         System.out.println("Shooting exceeded limits rightwards");
                         break;
                     }
-                    if (gameGrid[p.x + i][p.y] == Tileset.WARRIOR) {
-                        hitWarrior(p.x + i, p.y);
+                    if (gameGrid[p.getX() + i][p.getY()] == Tileset.WARRIOR) {
+                        hitWarrior(p.getX() + i, p.getY());
                         System.out.println("Warrior hit right!");
 
                         hit = true;
@@ -309,12 +327,12 @@ public class Engine {
                 break;
             case WEST:
                 for (int i = 1; i < range + 1; i++) {
-                    if (p.x + i < 0) {
+                    if (p.getX() + i < 0) {
                         System.out.println("Shooting exceeded limits leftwards");
                         break;
                     }
-                    if (gameGrid[p.x - i][p.y] == Tileset.WARRIOR) {
-                        hitWarrior(p.x - i, p.y);
+                    if (gameGrid[p.getX() - i][p.getY()] == Tileset.WARRIOR) {
+                        hitWarrior(p.getX() - i, p.getY());
                         System.out.println("Warrior hit left!");
                         hit = true;
                     }
@@ -344,8 +362,8 @@ public class Engine {
      * @param moveY Change in coordinate in Y direction
      */
     public void move(int moveX, int moveY, Player p) {
-        int hX = p.x;
-        int hY = p.y;
+        int pX = p.getX();
+        int pY = p.getY();
         TETile avatar;
         if (p instanceof Hero) {
             avatar = Tileset.INDIANA;
@@ -354,14 +372,36 @@ public class Engine {
         } else {
             avatar = Tileset.AVATAR;
         }
+        if (avatar == Tileset.INDIANA) {
+            Hero indy = (Hero) p;
+            if (!indy.hasKey()) {
+                pickUpKey(pX + moveX, pY + moveY, indy);
+                if (indy.hasKey()) {
+                    Door.id = Tileset.UNLOCKED_DOOR;
+                    gameGrid[Door.getX()][Door.getY()] = Door.id;
+                }
+            } else {
+                if (checkBoundary(new Room(Tileset.UNLOCKED_DOOR, pX, pY, 1, 1),
+                        Tileset.UNLOCKED_DOOR)) {
+                    endGame = true;
+                }
+            }
+        }
 
-        if (gameGrid[hX + moveX][hY + moveY] == Tileset.FLOOR) {
-            gameGrid[hX + moveX][hY + moveY] = avatar;
-            gameGrid[hX][hY] = Tileset.FLOOR;
-            p.x += moveX;
-            p.y += moveY;
+        if (gameGrid[pX + moveX][pY + moveY] == Tileset.FLOOR) {
+            gameGrid[pX + moveX][pY + moveY] = avatar;
+            gameGrid[pX][pY] = Tileset.FLOOR;
+            p.setCoords(pX + moveX, pY + moveY);
+
         } else {
             System.out.println("Invalid Move"); //TODO TAKE OUT LATER
+        }
+    }
+
+    public void pickUpKey(int x, int y, Hero hero) {
+        if (gameGrid[x][y] == Tileset.TREE) {
+            hero.takeKey();
+            gameGrid[x][y] = Tileset.FLOOR;
         }
     }
 
@@ -407,10 +447,10 @@ public class Engine {
      * @param grid  World to create on.
      * @param rooms Room to create.
      */
-    public static void createWorld(TETile[][] grid, Room[] rooms, Random rnd) {
+    public void createWorld(Room[] rooms, Random rnd) {
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
-                grid[x][y] = Tileset.NOTHING;
+                gameGrid[x][y] = Tileset.NOTHING;
             }
         }
 
@@ -420,10 +460,10 @@ public class Engine {
         for (int n = 0; n < rooms.length; n++) {
             int width = Math.abs(rnd.nextInt()) % limit + 2;
             int height = Math.abs(rnd.nextInt()) % limit + 2;
-            rooms[n] = addRoom(grid, width, height, rnd, roomTile);
-            if (n != 0 && !checkBoundary(grid, rooms[n], roomTile)
-                    && !checkBoundary(grid, rooms[n], hallwayTile)) {
-                connectRooms(grid, rooms[n - 1], rooms[n], rnd, hallwayTile);
+            rooms[n] = addRoom(width, height, rnd, roomTile);
+            if (n != 0 && !checkBoundary(rooms[n], roomTile)
+                    && !checkBoundary(rooms[n], hallwayTile)) {
+                connectRooms(rooms[n - 1], rooms[n], rnd, hallwayTile);
             }
         }
     }
@@ -431,21 +471,27 @@ public class Engine {
     /**
      * Checks borders if any tile equals the tile parameter
      *
-     * @param grid Grid to check on
      * @param room Room to check border on
      * @param tile Tile to look for around the room
      * @return Returns true if tile found, false if not
      */
-    public static boolean checkBoundary(TETile[][] grid, Room room, TETile tile) {
-        for (int col = room.x; col < room.x + room.width && col < WIDTH; col++) {
-            if (room.y - 1 >= 0 && grid[col][room.y - 1] == tile || ((room.y + room.height) < HEIGHT
-                    && grid[col][room.y + room.height] == tile)) {
+    public  boolean checkBoundary(Room room, TETile tile) {
+        int roomX = room.getX();
+        int roomY = room.getY();
+        int roomHeight = room.getHeight();
+        int roomWidth = room.getWidth();
+
+        int lowerBoundX = Math.max(0, roomX - 1);
+        int upperBoundX = Math.min(roomX + roomWidth, WIDTH - 1);
+        int lowerBoundY = Math.max(0, roomY - 1);
+        int upperBoundY = Math.min(roomY + roomHeight, HEIGHT - 1);
+        for (int col = roomX; col < upperBoundX; col++) {
+            if (gameGrid[col][lowerBoundY] == tile || gameGrid[col][upperBoundY] == tile) {
                 return true;
             }
         }
-        for (int row = room.y; row < room.y + room.height && row < grid.length; row++) {
-            if ((room.x - 1 >= 0 && grid[room.x - 1][row] == tile)
-                    || (room.x + room.width < WIDTH && grid[room.x + room.width][row] == tile)) {
+        for (int row = roomY; row < upperBoundY; row++) {
+            if (gameGrid[lowerBoundX][row] == tile || gameGrid[upperBoundX][row] == tile) {
                 return true;
             }
         }
@@ -456,17 +502,16 @@ public class Engine {
      * 1) Set all points within area to be a FLOOR
      * 2) Bound area with WALL if tile is NOTHING
      *
-     * @param grid   World to create on
      * @param lLX    Lower Left X-coordinate
      * @param lLY    Lower Left Y-coordinate
      * @param width  Width of the are to be created
      * @param height Height of the area to be created
      */
-    public static void addArea(TETile[][] grid, int lLX, int lLY,
+    public void addArea(int lLX, int lLY,
                                int width, int height, TETile tile) {
         for (int row = Math.max(1, lLY); row < lLY + height && row < HEIGHT - 1; row++) {
             for (int col = Math.max(1, lLX); col < lLX + width && col < WIDTH - 1; col++) {
-                grid[col][row] = tile;
+                gameGrid[col][row] = tile;
             }
         }
 
@@ -476,20 +521,20 @@ public class Engine {
         int upperBoundY = Math.min(lLY + height, HEIGHT - 1);
 
         for (int col = lowerBoundX; col < upperBoundX + 1; col++) {
-            if (grid[col][lowerBoundY] == Tileset.NOTHING) {
-                grid[col][lowerBoundY] = Tileset.WALL;
+            if (gameGrid[col][lowerBoundY] == Tileset.NOTHING) {
+                gameGrid[col][lowerBoundY] = Tileset.WALL;
             }
-            if (grid[col][upperBoundY] == Tileset.NOTHING) {
-                grid[col][upperBoundY] = Tileset.WALL;
+            if (gameGrid[col][upperBoundY] == Tileset.NOTHING) {
+                gameGrid[col][upperBoundY] = Tileset.WALL;
             }
         }
 
         for (int row = lowerBoundY; row < upperBoundY + 1; row++) {
-            if (grid[lowerBoundX][row] == Tileset.NOTHING) {
-                grid[lowerBoundX][row] = Tileset.WALL;
+            if (gameGrid[lowerBoundX][row] == Tileset.NOTHING) {
+                gameGrid[lowerBoundX][row] = Tileset.WALL;
             }
-            if (grid[upperBoundX][row] == Tileset.NOTHING) {
-                grid[upperBoundX][row] = Tileset.WALL;
+            if (gameGrid[upperBoundX][row] == Tileset.NOTHING) {
+                gameGrid[upperBoundX][row] = Tileset.WALL;
             }
         }
     }
@@ -500,16 +545,15 @@ public class Engine {
      * 2) Set all points within area to be a FLOOR
      * 3) Bound area with WALL if tile is NOTHING
      *
-     * @param grid   World to create on
      * @param width  Width of the are to be created
      * @param height Height of the area to be created
      * @return Returns initialized Room object
      */
-    public static Room addRoom(TETile[][] grid, int width, int height, Random rnd, TETile tile) {
+    public Room addRoom(int width, int height, Random rnd, TETile tile) {
         int lLX = Math.max(1, Math.abs(rnd.nextInt()) % (WIDTH - width - 1));
         int lLY = Math.max(1, Math.abs(rnd.nextInt()) % (HEIGHT - height - 1));
-        addArea(grid, lLX, lLY, width, height, tile);
-        return new Room(lLX, lLY, width, height, -1);
+        addArea(lLX, lLY, width, height, tile);
+        return new Room(tile, lLX, lLY, width, height);
     }
 
     /**
@@ -518,19 +562,18 @@ public class Engine {
      * if orientation is true, create hallways in a mirrored L shape or upside-down mirrored L shape
      * else create hallways in a create hallways in a L shape or upside-down L shape
      *
-     * @param grid
      * @param room1
      * @param room2
      */
-    public static void connectRooms(TETile[][] grid, Room room1, Room room2, Random rnd, TETile tile) {
-        Room leftMost = (room1.x < room2.x) ? room1 : room2;
+    public void connectRooms(Room room1, Room room2, Random rnd, TETile tile) {
+        Room leftMost = (room1.getX() < room2.getX()) ? room1 : room2;
         Room rightMost = (leftMost == room1) ? room2 : room1;
 
         boolean orientation = rnd.nextBoolean();
         if (orientation) {
-            addHallway(grid, leftMost, rightMost, rnd, tile);
+            addHallway(leftMost, rightMost, rnd, tile);
         } else {
-            addHallway(grid, rightMost, leftMost, rnd, tile);
+            addHallway(rightMost, leftMost, rnd, tile);
         }
     }
 
@@ -539,28 +582,46 @@ public class Engine {
      * Length limits are set to the horizontal/vertical
      * distance respectively with added lengths based on room sizes
      *
-     * @param grid
      * @param room1
      * @param room2
      */
-    public static void addHallway(TETile[][] grid, Room room1, Room room2, Random rnd, TETile tile) {
-        int widthGive = Math.max(room1.width, room2.width);
-        int heightGive = Math.max(room1.height, room2.height);
-        int widthLimit = Math.abs(room1.x - room2.x) + widthGive;
-        int heightLimit = Math.abs(room1.y - room2.y) + heightGive;
+    public void addHallway(Room room1, Room room2, Random rnd, TETile tile) {
+        int widthGive = Math.max(room1.getWidth(), room2.getWidth());
+        int heightGive = Math.max(room1.getHeight(), room2.getHeight());
+        int widthLimit = Math.abs(room1.getX() - room2.getX()) + widthGive;
+        int heightLimit = Math.abs(room1.getY() - room2.getY()) + heightGive;
 
-        int Y = (Math.abs(rnd.nextInt()) % room1.height) + room1.y;
-        int X = (Math.abs(rnd.nextInt()) % room2.width) + room2.x;
+        int Y = (Math.abs(rnd.nextInt()) % room1.getHeight()) + room1.getY();
+        int X = (Math.abs(rnd.nextInt()) % room2.getWidth()) + room2.getX();
 
-        if (room1.x > room2.x) {
-            addArea(grid, Math.max(1, room1.x - widthLimit), Y, widthLimit, 1, tile);
+        if (room1.getX() > room2.getX()) {
+            addArea(Math.max(1, room1.getX() - widthLimit), Y, widthLimit, 1, tile);
         } else {
-            addArea(grid, room1.x + room1.width, Y, widthLimit, 1, tile);
+            addArea(room1.getX() + room1.getWidth(), Y, widthLimit, 1, tile);
         }
-        if (Y < room2.y) {
-            addArea(grid, X, Math.max(1, room2.y - heightLimit), 1, heightLimit, tile);
+        if (Y < room2.getY()) {
+            addArea(X, Math.max(1, room2.getY() - heightLimit), 1, heightLimit, tile);
         } else {
-            addArea(grid, X, Math.max(1, Y - heightLimit), 1, heightLimit, tile);
+            addArea(X, Math.max(1, Y - heightLimit), 1, heightLimit, tile);
         }
+    }
+
+    public HashMap<Integer, Coordinate>[] makeMap() {
+        HashMap<Integer, Coordinate>[] maps = new HashMap[2];
+        maps[0] = new HashMap<>();
+        maps[1] = new HashMap<>();
+
+        for (int col = 0; col < gameGrid.length; col++) {
+            for (int row = 0; row < gameGrid[0].length; row++) {
+                if (gameGrid[col][row] == Tileset.FLOOR) {
+                    maps[0].put(maps[0].size(), new Coordinate(col, row));
+                } else if (gameGrid[col][row] == Tileset.WALL &&
+                        checkBoundary(new Room(Tileset.FLOOR, col, row, 1, 1), Tileset.FLOOR) &&
+                        checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1), Tileset.NOTHING)) {
+                    maps[1].put(maps[1].size(), new Coordinate(col, row));
+                }
+            }
+        }
+        return maps;
     }
 }
