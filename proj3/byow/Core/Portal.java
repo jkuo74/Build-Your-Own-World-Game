@@ -68,9 +68,14 @@ public class Portal extends Element {
     public boolean equals(Object o) {
         if (o instanceof Coordinate) {
             Coordinate c = (Coordinate) o;
-            return (c.getX() == coord.getX() && c.getY() == coord.getY()) ||
-                    (c.getX() == other.getX() && c.getY() == other.getY());
+            return (c.getX() == coord.getX() && c.getY() == coord.getY())
+                    || (c.getX() == other.getX() && c.getY() == other.getY());
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
     }
 }

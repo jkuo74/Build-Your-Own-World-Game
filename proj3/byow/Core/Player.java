@@ -41,7 +41,8 @@ public abstract class Player extends Element{
                 return engine.move(1, 0, this);
             case WEST:
                 return engine.move(-1, 0, this);
+            default:
+                return false;
         }
-        return false;
     }
 }
