@@ -73,7 +73,7 @@ public class Engine {
     }
 
     public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
-        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        //ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
 
@@ -118,8 +118,8 @@ public class Engine {
             }
         }
 
-        hud();
-        ter.renderFrame(gameGrid);
+        //hud();
+        //ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -150,7 +150,7 @@ public class Engine {
                     }
                 }
                 hud();
-                ter.renderFrame(gameGrid);
+                //ter.renderFrame(gameGrid);
             }
         }
         return gameGrid;
