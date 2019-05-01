@@ -13,10 +13,11 @@ public class Portal extends Element {
 
     /**
      * Transport the character to the other end of the portal
+     *
      * @param c
      * @param p
      */
-    public void transport(Coordinate c, Player p) {
+    public boolean transport(Coordinate c, Player p) {
         TETile[][] grid = p.engine.gameGrid;
         Coordinate drop;
 
@@ -25,14 +26,18 @@ public class Portal extends Element {
         } else {
             drop = dropSpot(other, p);
         }
-
+        if (drop == null) {
+            return false;
+        }
         grid[drop.getX()][drop.getY()] = p.getID();
         grid[p.getX()][p.getY()] = Tileset.FLOOR;
         p.setCoords(drop.getX(), drop.getY());
+        return true;
     }
 
     /**
      * Finds a valid spot to drop the character coming out of the other end of the portal
+     *
      * @param c
      * @param p
      * @return
@@ -53,6 +58,8 @@ public class Portal extends Element {
             drop.setX(lowerBoundX);
         } else if (grid[upperBoundX][c.getY()] == Tileset.FLOOR) {
             drop.setX(upperBoundX);
+        } else {
+            return null;
         }
         return drop;
     }

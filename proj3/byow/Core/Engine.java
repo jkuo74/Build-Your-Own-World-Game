@@ -246,6 +246,12 @@ public class Engine {
         return new Element(tile, coord.copy());
     }
 
+    /**
+     * Find two valid walls to place portals
+     *
+     * @param tile
+     * @return
+     */
     private Portal placePortal(TETile tile) {
         int place1 = rng.nextInt(wallMap.size());
         int place2 = rng.nextInt(wallMap.size());
@@ -367,7 +373,7 @@ public class Engine {
      * @param moveX Change in coordinate in X direction
      * @param moveY Change in coordinate in Y direction
      */
-    public void move(int moveX, int moveY, Player p) {
+    public boolean move(int moveX, int moveY, Player p) {
         int pX = p.getX();
         int pY = p.getY();
         Coordinate coord = new Coordinate(pX + moveX, pY + moveY);
@@ -388,16 +394,16 @@ public class Engine {
         }
         for (int n = 0; n < portals.length; n++) {
             if (portals[n].equals(coord)) {
-                portals[n].transport(coord, p);
-                return;
+                return portals[n].transport(coord, p);
             }
         }
         if (gameGrid[pX + moveX][pY + moveY] == Tileset.FLOOR) {
             gameGrid[pX + moveX][pY + moveY] = p.getID();
             gameGrid[pX][pY] = Tileset.FLOOR;
             p.setCoords(pX + moveX, pY + moveY);
-
+            return true;
         }
+        return false;
     }
 
     /**

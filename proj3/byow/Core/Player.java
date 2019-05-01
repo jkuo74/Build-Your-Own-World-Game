@@ -29,20 +29,17 @@ public abstract class Player extends Element {
         return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getY() - p2.getY());
     }
 
-    public void move(Engine.Direction dir) {
+    public boolean move(Engine.Direction dir) {
         switch (dir) {
             case NORTH:
-                engine.move(0, 1, this);
-                break;
+                return engine.move(0, 1, this);
             case SOUTH:
-                engine.move(0, -1, this);
-                break;
+                return engine.move(0, -1, this);
             case EAST:
-                engine.move(1, 0, this);
-                break;
+                return engine.move(1, 0, this);
             case WEST:
-                engine.move(-1, 0, this);
-                break;
+                return engine.move(-1, 0, this);
         }
+        return false;
     }
 }

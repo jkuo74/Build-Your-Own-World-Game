@@ -2,6 +2,7 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Warrior extends Player {
@@ -27,16 +28,21 @@ public class Warrior extends Player {
             moveRandomly();
         }
     }
+
     private void moveRandomly() {
-        double nextMove = rnd.nextDouble();
-        if (nextMove < 0.25) { // move left
-            move(Engine.Direction.WEST);
-        } else if (nextMove < 0.5) {
-            move(Engine.Direction.EAST); // move right
-        } else if (nextMove < 0.75) {
-            move(Engine.Direction.NORTH); // move up
-        } else {
-            move(Engine.Direction.SOUTH); // move down
+        ArrayList<Engine.Direction> directions = new ArrayList<>();
+        directions.add(Engine.Direction.NORTH);
+        directions.add(Engine.Direction.SOUTH);
+        directions.add(Engine.Direction.EAST);
+        directions.add(Engine.Direction.WEST);
+        moveValid(directions);
+    }
+
+    private void moveValid(ArrayList<Engine.Direction> directions) {
+        int nextMove = rnd.nextInt(directions.size());
+        if (!move((directions.get(nextMove)))) {
+            directions.remove(nextMove);
+            moveValid(directions);
         }
     }
 }
