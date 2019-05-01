@@ -8,6 +8,7 @@ import java.util.Random;
 
 public class Warrior extends Player {
     Hero hero;
+    boolean freeze = false; // After warrior hits hero, freezes for 1 turn
 
     public Warrior(Engine e, TETile tile, Coordinate c, Random r, Hero h) {
         super(e, tile, c, r, 2);
@@ -16,18 +17,22 @@ public class Warrior extends Player {
 
     @Override
     public void play(char c) {
+        if (freeze) {
+            freeze = false;
+            return;
+        }
         double nextMove = rnd.nextDouble();
         if (manhattanDistance(hero, this) < 14) {
-            if (nextMove > 0.3) {
+            if (nextMove > 0.15) {
                 ArrayList<Coordinate> path = engine.performSearch(getCoord(), hero.getCoord());
                 if (path.isEmpty()) {
-                    System.out.println("Path for finding hero returned empty");
+                    moveRandomly();
                     return;
                 }
                 Coordinate nextCoor = path.get(0);
                 Engine.Direction nextDir;
                 if ((nextCoor.getX() != getX() && nextCoor.getY() != getY())) {
-                    System.out.println("Next coordinate invalid after search");
+                    moveRandomly();
                     return;
                 }
                 if (nextCoor.getX() > getX()) {
@@ -39,21 +44,18 @@ public class Warrior extends Player {
                 } else {
                     nextDir = Engine.Direction.SOUTH;
                 }
-                System.out.println("YES THIS WORKED");
                 move(nextDir);
-                //if (!move(nextDir)) {
-                //    System.out.println("couldn't move towards player");
-                //}
             }
         } else {
             if (nextMove > 0.9) {
                 return; // don't move
             }
             moveRandomly();
-            // If hero is exactly around warrior, hit hero
-            if (manhattanDistance(this, hero) <= 1) {
-                hero.takeHit();
-            }
+        }
+        // If hero is exactly around warrior, hit hero
+        if (manhattanDistance(this, hero) <= 1 && nextMove > 0.5) {
+            freeze = true;
+            hero.takeHit();
         }
     }
     private void moveRandomly() {

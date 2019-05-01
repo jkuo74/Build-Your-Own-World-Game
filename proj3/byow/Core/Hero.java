@@ -10,7 +10,6 @@ public class Hero extends Player {
     public Hero(Engine e, TETile tile, Coordinate c, Random r, int numKeys) {
         super(e, tile, c, r, 5);
         this.numKeys = numKeys;
-        health = 4;
     }
 
     public void takeKey() {

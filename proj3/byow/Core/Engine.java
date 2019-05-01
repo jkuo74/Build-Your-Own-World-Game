@@ -25,6 +25,7 @@ public class Engine {
     Element door;
 
     boolean endGame = false;
+    boolean heroAlive = true;
     Random rng;
     Portal[] portals;
     HashMap<Integer, Coordinate> floorMap = new HashMap<>();
@@ -37,7 +38,6 @@ public class Engine {
 
     public void interactWithKeyboard() {
 
-        // TODO HUD and Portals
         /**Random # of adversaries in rooms to walk completely/stochastically at random EACH TURN
          * Add life to hero
          * add a key that opens a door
@@ -45,16 +45,22 @@ public class Engine {
 
         Menu menu = new Menu(this, WIDTH, HEIGHT);
         menu.initialize();
+        heroAlive = true;
+        endGame = false;
         menu.run();
-
+        if (heroAlive) {
+            menu.victoryScreen();
+        } else {
+            menu.losingScreen();
+        }
     }
 
     private void hud() {
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.text(3, 1, "Health: " + hero.health);
-        StdDraw.text(9, 1, "Enemies Left: " + players.size());
-        StdDraw.text(16, 1, "Keys Left: " + hero.numKeys);
+        StdDraw.text(9, 1, " Enemies Left: " + players.size());
+        StdDraw.text(16, 1, " Keys Left: " + hero.numKeys);
         int x = (int) Math.floor(StdDraw.mouseX());
         int y = (int) Math.floor(StdDraw.mouseY()) - 3;
         if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
@@ -100,9 +106,9 @@ public class Engine {
         } else {
             // TODO If didn't load players, Initialize players and random locations
             // TODO num of players needs to be a soft function of number of floor tiles
-            int numOfPlayers = 5;
+            int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
             players = new HashSet<>();
-            for (int i = 0; i < numOfPlayers; i++) {
+            for (int i = 0; i < numOfEnemies; i++) {
                 players.add(placeWarrior(hero));
             }
         }
@@ -124,11 +130,14 @@ public class Engine {
                     hero.play(c);
                     for (Player w : players) {
                         w.play(c);
+                        if (hero.isDead()) {
+                            endGame = true;
+                            heroAlive = false;
+                        }
                     }
                 }
                 hud();
                 ter.renderFrame(gameGrid);
-
             }
         }
         return gameGrid;
@@ -304,7 +313,6 @@ public class Engine {
         double probability = .67;
         // shot misses with .33 probability
         if (rng.nextDouble() > probability) {
-            System.out.println("Shooting falied stochastically");
             return false;
         }
 
@@ -313,12 +321,10 @@ public class Engine {
             case NORTH:
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getY() + i > HEIGHT - 1) {
-                        System.out.println("Shooting exceeded limits upwards");
                         break;
                     }
-                    if (gameGrid[p.getX()][p.getY() + i] == Tileset.WARRIOR) {
+                    else if (gameGrid[p.getX()][p.getY() + i] == Tileset.WARRIOR) {
                         hitWarrior(p.getX(), p.getY() + i);
-                        System.out.println("Warrior hit up!");
                         hit = true;
                     }
                 }
@@ -326,12 +332,10 @@ public class Engine {
             case SOUTH:
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getY() - i < 0) {
-                        System.out.println("Shooting exceeded limits downwards");
                         break;
                     }
-                    if (gameGrid[p.getX()][p.getY() - i] == Tileset.WARRIOR) {
+                    else if (gameGrid[p.getX()][p.getY() - i] == Tileset.WARRIOR) {
                         hitWarrior(p.getX(), p.getY() - i);
-                        System.out.println("Warrior hit down!");
                         hit = true;
                     }
                 }
@@ -339,26 +343,21 @@ public class Engine {
             case EAST:
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getX() + i > WIDTH - 1) {
-                        System.out.println("Shooting exceeded limits rightwards");
                         break;
                     }
-                    if (gameGrid[p.getX() + i][p.getY()] == Tileset.WARRIOR) {
+                    else if (gameGrid[p.getX() + i][p.getY()] == Tileset.WARRIOR) {
                         hitWarrior(p.getX() + i, p.getY());
-                        System.out.println("Warrior hit right!");
-
                         hit = true;
                     }
                 }
                 break;
             case WEST:
                 for (int i = 1; i < range + 1; i++) {
-                    if (p.getX() + i < 0) {
-                        System.out.println("Shooting exceeded limits leftwards");
+                    if (p.getX() - i < 0) {
                         break;
                     }
-                    if (gameGrid[p.getX() - i][p.getY()] == Tileset.WARRIOR) {
+                    else if (gameGrid[p.getX() - i][p.getY()] == Tileset.WARRIOR) {
                         hitWarrior(p.getX() - i, p.getY());
-                        System.out.println("Warrior hit left!");
                         hit = true;
                     }
                 }
@@ -439,20 +438,6 @@ public class Engine {
         }
     }
 
-    private int[][] convertGrid() {
-        int[][] grid = new int[WIDTH][HEIGHT];
-        for (int i = 0; i < WIDTH; i++) {
-            for (int j = 0; j < HEIGHT; j++) {
-                if (gameGrid[i][j] != Tileset.NOTHING && gameGrid[i][j] != Tileset.FLOOR) {
-                    grid[i][j] = i * HEIGHT + j;
-                } else {
-                    grid[i][j] = -1;
-                }
-            }
-        }
-        return grid;
-    }
-
     private Coordinate convertToCoordinate(int n) {
         int x = n / HEIGHT;
         int y = n % HEIGHT;
@@ -465,7 +450,6 @@ public class Engine {
 
     // TODO Toggle mode.
     public ArrayList<Coordinate> performSearch(Coordinate begin, Coordinate finish) {
-        int[][] grid = convertGrid();
         int start = convertToInt(begin);
         int end = convertToInt(finish);
 
@@ -481,8 +465,8 @@ public class Engine {
             int c = fringe.removeSmallest();
             visited.add(c);
 
-            Coordinate a = convertToCoordinate(c);
-            System.out.println("I'm at x:" + a.getX() + ", " + a.getY() + "End is: " + finish.getX() + ", " + finish.getY());
+            // Coordinate a = convertToCoordinate(c);
+            // System.out.println("I'm at: " + a.getX() + ", " + a.getY() + " End is: " + hero.getX() + ", " + hero.getY());
             if (c == end) {
                 return extractPath(edgeTo, start, end);
             }
@@ -499,10 +483,11 @@ public class Engine {
             , HashSet<Integer> visited) {
         if (distTo.get(from) == null) {
             return;
-        } else if (distTo.get(to) == null) {
-            if (!pQ.contains(to) && !visited.contains(to)) {
-                distTo.put(to, distTo.get(from) + 1);
-                path.put(to, from);
+        } else if ((distTo.get(to) == null || distTo.get(from) + 1 < distTo.get(to))
+                && !visited.contains(to)) {
+            distTo.put(to, distTo.get(from) + 1);
+            path.put(to, from);
+            if (!pQ.contains(to) ) {
                 pQ.add(to, distTo.get(to));
             }
         }
@@ -526,20 +511,20 @@ public class Engine {
         Coordinate c = convertToCoordinate(val);
         ArrayList<Integer> result = new ArrayList<>();
         try {
-            if (c.getX() + 1 < HEIGHT && gameGrid[c.getX() + 1][c.getY()] != Tileset.WALL) {
+            if (c.getX() + 1 < WIDTH && gameGrid[c.getX() + 1][c.getY()] != Tileset.WALL) {
                 result.add(convertToInt(new Coordinate(c.getX() + 1, c.getY())));
             }
             if (c.getX() - 1 >= 0 && gameGrid[c.getX() - 1][c.getY()] != Tileset.WALL) {
                 result.add(convertToInt(new Coordinate(c.getX() - 1, c.getY())));
             }
-            if (c.getY() + 1 < WIDTH && gameGrid[c.getX()][c.getY() + 1] != Tileset.WALL) {
+            if (c.getY() + 1 < HEIGHT && gameGrid[c.getX()][c.getY() + 1] != Tileset.WALL) {
                 result.add(convertToInt(new Coordinate(c.getX(), c.getY() + 1)));
             }
             if (c.getY() - 1 >= 0 && gameGrid[c.getX()][c.getY() - 1] != Tileset.WALL) {
                 result.add(convertToInt(new Coordinate(c.getX(), c.getY() - 1)));
             }
         } catch (Exception e) {
-            System.out.println("Error occured when extracting neighbors");
+            System.out.println("Search Error " + e);
             return new ArrayList<>();
         }
         return result;

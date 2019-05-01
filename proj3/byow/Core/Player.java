@@ -20,7 +20,6 @@ public abstract class Player extends Element{
 
     public void takeHit() {
         health -= 1;
-        System.out.println("Health: " + health);
     }
 
     public boolean isDead() {

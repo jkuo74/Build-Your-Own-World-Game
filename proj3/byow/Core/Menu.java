@@ -71,6 +71,7 @@ public class Menu {
                 switch (c) {
                     case 'N':
                     case 'n':
+                        flag = false;
                         addChar('N');
                         startNewGameMenu();
                         break;
@@ -80,6 +81,7 @@ public class Menu {
                         break;
                     case 'L':
                     case 'l':
+                        flag = false;
                         engine.loadSavedGame();
                         break;
                     default:
@@ -126,5 +128,56 @@ public class Menu {
         return true;
     }
 
+    public void victoryScreen() {
+        boolean flag = true;
+        while (flag) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                switch (c) {
+                    case 'M':
+                    case 'm':
+                        engine.interactWithKeyboard();
+                        flag = false;
+                        break;
+                    default:
+                }
+            }
+            int midWidth = width / 2;
+            int midHeight = height / 2;
+            newGameInput = "";
 
+            StdDraw.clear(Color.BLACK);
+            StdDraw.setPenColor(Color.WHITE);
+            StdDraw.text(midWidth, midHeight, "You win! Press M to the main menu!");
+            StdDraw.show();
+        }
+    }
+
+    public void losingScreen() {
+        boolean flag = true;
+        while (flag) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                switch (c) {
+                    case 'M':
+                    case 'm':
+                        engine.interactWithKeyboard();
+                        flag = false;
+                        break;
+                    case 'Q':
+                    case 'q':
+                        System.exit(0);
+                    default:
+                }
+            }
+            int midWidth = width / 2;
+            int midHeight = height / 2;
+            newGameInput = "";
+
+            StdDraw.clear(Color.BLACK);
+            StdDraw.setPenColor(Color.WHITE);
+            StdDraw.text(midWidth, midHeight, "You lose. Press Q to quit game or M to start a new one.");
+            StdDraw.show();
+        }
+    }
 }
