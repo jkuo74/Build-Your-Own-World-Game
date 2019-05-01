@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="310c1538-cb97-4eee-8258-dcc86cd8e16f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/byow/Core/Coordinate.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Coordinate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Element.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Element.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/byow/Core/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/Core/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Menu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/TileEngine/TERenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/TileEngine/TERenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/TileEngine/TETile.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/TileEngine/TETile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/TileEngine/Tileset.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/TileEngine/Tileset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/save.txt" beforeDir="false" afterPath="$PROJECT_DIR$/save.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -126,15 +119,15 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="176">
-                  <caret line="328" column="25" lean-forward="true" selection-start-line="328" selection-start-column="25" selection-end-line="328" selection-end-column="25" />
+                <state relative-caret-position="103">
+                  <caret line="157" column="19" selection-start-line="157" selection-start-column="19" selection-end-line="157" selection-end-column="19" />
                   <folding>
                     <element signature="imports" expanded="true" />
                     <element signature="e#5838#5839#0" expanded="true" />
                     <element signature="e#5898#5899#0" expanded="true" />
                     <element signature="e#11208#11209#0" expanded="true" />
                     <element signature="e#11270#11271#0" expanded="true" />
-                    <element signature="e#16561#16562#0" expanded="true" />
+                    <element signature="e#16568#16569#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -239,7 +232,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1556752174467" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1556752270811" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -486,15 +479,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="328" column="25" lean-forward="true" selection-start-line="328" selection-start-column="25" selection-end-line="328" selection-end-column="25" />
+        <state relative-caret-position="103">
+          <caret line="157" column="19" selection-start-line="157" selection-start-column="19" selection-end-line="157" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#5838#5839#0" expanded="true" />
             <element signature="e#5898#5899#0" expanded="true" />
             <element signature="e#11208#11209#0" expanded="true" />
             <element signature="e#11270#11271#0" expanded="true" />
-            <element signature="e#16561#16562#0" expanded="true" />
+            <element signature="e#16568#16569#0" expanded="true" />
           </folding>
         </state>
       </provider>

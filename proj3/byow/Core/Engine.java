@@ -73,7 +73,7 @@ public class Engine implements Serializable {
     }
 
     public TETile[][] runGame(String input, HashSet ps, boolean isKeyboard, boolean isLoad) {
-        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        // ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
 
@@ -123,8 +123,8 @@ public class Engine implements Serializable {
             hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
 
-        hud();
-        ter.renderFrame(gameGrid);
+        //hud();
+        //ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -155,7 +155,7 @@ public class Engine implements Serializable {
                     }
                 }
                 hud();
-                ter.renderFrame(gameGrid);
+                // ter.renderFrame(gameGrid);
             }
         }
         return gameGrid;
