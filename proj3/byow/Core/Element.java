@@ -3,7 +3,7 @@ package byow.Core;
 import byow.TileEngine.TETile;
 
 public class Element {
-    private Coordinate coord;
+    protected Coordinate coord;
     TETile id;
 
     public Element(TETile tile, Coordinate c) {
@@ -17,6 +17,10 @@ public class Element {
 
     public int getY() {
         return coord.getY();
+    }
+
+    public Coordinate getCoord() {
+        return coord.copy();
     }
 
     public void setCoords(int x, int y) {

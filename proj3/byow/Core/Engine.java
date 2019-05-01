@@ -24,6 +24,7 @@ public class Engine {
     Element Door;
     boolean endGame = false;
     Random rng;
+    Portal[] portals;
     HashMap<Integer, Coordinate> floorMap = new HashMap<>();
     HashMap<Integer, Coordinate> wallMap = new HashMap<>();
 
@@ -69,9 +70,11 @@ public class Engine {
         Door = placeElement(wallMap, Tileset.LOCKED_DOOR);
         for (int n = 0; n < numKeys; n++) {
             placeElement(floorMap, Tileset.TREE);
-
         }
-
+        portals = new Portal[(WIDTH + HEIGHT) / Math.min(WIDTH, HEIGHT)];
+        for (int n = 0; n < portals.length; n++) {
+            portals[n] = placePortal(Tileset.WATER);
+        }
         // TODO save and load other players.
         if (isLoad) {
             String rest = (String) commands[1];
@@ -243,6 +246,17 @@ public class Engine {
         return new Element(tile, coord.copy());
     }
 
+    private Portal placePortal(TETile tile) {
+        int place1 = rng.nextInt(wallMap.size());
+        int place2 = rng.nextInt(wallMap.size());
+
+        Coordinate coord1 = wallMap.get(place1);
+        Coordinate coord2 = wallMap.get(place2);
+        gameGrid[coord1.getX()][coord1.getY()] = tile;
+        gameGrid[coord2.getX()][coord2.getY()] = tile;
+        return new Portal(tile, coord1.copy(), coord2.copy());
+    }
+
     /**
      * Find a valid coordinate to place a warrior, initialize at this coordinate
      * and return
@@ -356,7 +370,7 @@ public class Engine {
     public void move(int moveX, int moveY, Player p) {
         int pX = p.getX();
         int pY = p.getY();
-
+        Coordinate coord = new Coordinate(pX + moveX, pY + moveY);
         if (p.getID() == Tileset.INDIANA) {
             Hero indy = (Hero) p;
             if (!indy.hasAllKeys()) {
@@ -372,7 +386,12 @@ public class Engine {
                 }
             }
         }
-
+        for (int n = 0; n < portals.length; n++) {
+            if (portals[n].equals(coord)) {
+                portals[n].transport(coord, p);
+                return;
+            }
+        }
         if (gameGrid[pX + moveX][pY + moveY] == Tileset.FLOOR) {
             gameGrid[pX + moveX][pY + moveY] = p.getID();
             gameGrid[pX][pY] = Tileset.FLOOR;

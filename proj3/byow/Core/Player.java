@@ -4,7 +4,7 @@ import byow.TileEngine.TETile;
 
 import java.util.Random;
 
-public abstract class Player extends Element{
+public abstract class Player extends Element {
     int health = 2;
     Engine engine;
     Random rnd;
@@ -30,7 +30,7 @@ public abstract class Player extends Element{
     }
 
     public void move(Engine.Direction dir) {
-        switch(dir) {
+        switch (dir) {
             case NORTH:
                 engine.move(0, 1, this);
                 break;
