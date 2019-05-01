@@ -18,6 +18,10 @@ public class Element {
         return coord.getY();
     }
 
+    public Coordinate getC() {
+        return coord;
+    }
+
     public void setCoords(int x, int y) {
         coord.setX(x);
         coord.setY(y);

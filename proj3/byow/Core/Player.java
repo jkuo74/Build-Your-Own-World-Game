@@ -5,20 +5,22 @@ import byow.TileEngine.TETile;
 import java.util.Random;
 
 public abstract class Player extends Element{
-    int health = 2;
+    int health;
     Engine engine;
     Random rnd;
 
-    public Player(Engine e, TETile tile, Coordinate c, Random r) {
+    public Player(Engine e, TETile tile, Coordinate c, Random r, int h) {
         super(tile, c);
         engine = e;
         rnd = r;
+        health = h;
     }
 
     abstract public void play(char c);
 
     public void takeHit() {
-        health--;
+        health -= 1;
+        System.out.println("Health: " + health);
     }
 
     public boolean isDead() {

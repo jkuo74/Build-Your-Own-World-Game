@@ -3,6 +3,7 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.HelperFunction.*;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
@@ -20,7 +21,7 @@ public class Engine {
 
     private static final int WIDTH = 70;
     private static final int HEIGHT = 40;
-    Player[] players;
+    HashSet<Player> players;
     Element Door;
     boolean endGame = false;
     Random rng;
@@ -34,7 +35,7 @@ public class Engine {
 
     public void interactWithKeyboard() {
 
-        //TODO MAIN MENU FOR SEED GENERATION...
+        // TODO HUD and Portals
         /**Random # of adversaries in rooms to walk completely/stochastically at random EACH TURN
          * Add life to hero
          * add a key that opens a door
@@ -82,9 +83,9 @@ public class Engine {
             // TODO If didn't load players, Initialize players and random locations
             // TODO num of players needs to be a soft function of number of floor tiles
             int numOfPlayers = 5;
-            players = new Player[numOfPlayers];
+            players = new HashSet<>();
             for (int i = 0; i < numOfPlayers; i++) {
-                players[i] = placeWarrior(hero);
+                players.add(placeWarrior(hero));
             }
         }
 
@@ -335,7 +336,17 @@ public class Engine {
 
     // Hit a warrior at x, y.
     private void hitWarrior(int x, int y) {
-
+        Iterator<Player> it = players.iterator();
+        while (it.hasNext()) {
+            Player w = it.next();
+            if (w instanceof Warrior && w.getX() == x && w.getY() == y) {
+                w.takeHit();
+                if (w.isDead()) {
+                    gameGrid[x][y] = Tileset.FLOOR;
+                    it.remove();
+                }
+            }
+        }
     }
     /**
      * Move character given "WASD" movement directions
@@ -398,6 +409,112 @@ public class Engine {
             hero.takeKey();
             gameGrid[x][y] = Tileset.FLOOR;
         }
+    }
+
+    private int[][] convertGrid() {
+        int[][] grid = new int[WIDTH][HEIGHT];
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                if (gameGrid[i][j] != Tileset.NOTHING && gameGrid[i][j] != Tileset.FLOOR) {
+                    grid[i][j] = i * HEIGHT + j;
+                } else {
+                    grid[i][j] = -1;
+                }
+            }
+        }
+        return grid;
+    }
+
+    private Coordinate convertToCoordinate(int n) {
+        int x = n / HEIGHT;
+        int y = n % HEIGHT;
+        return new Coordinate(x, y);
+    }
+
+    private int convertToInt(Coordinate c) {
+        return c.getX() * HEIGHT + c.getY();
+    }
+
+    // TODO Toggle mode.
+    public ArrayList<Coordinate> performSearch(Coordinate begin, Coordinate finish) {
+        int[][] grid = convertGrid();
+        int start = convertToInt(begin);
+        int end = convertToInt(finish);
+
+        ArrayHeapMinPQ<Integer> fringe = new ArrayHeapMinPQ<>();
+        HashMap<Integer, Double> distTo = new HashMap<>();
+        HashMap<Integer, Integer> edgeTo = new HashMap<>();
+        HashSet<Integer> visited = new HashSet<>();
+
+        fringe.add(start, 0);
+        distTo.put(start, 0.0);
+
+        while (fringe.size() > 0) {
+            int c = fringe.removeSmallest();
+            visited.add(c);
+
+            Coordinate a = convertToCoordinate(c);
+            System.out.println("I'm at x:" + a.getX() + ", " + a.getY() + "End is: " + finish.getX() + ", " + finish.getY());
+            if (c == end) {
+                return extractPath(edgeTo, start, end);
+            }
+
+            for (int n : getNeighbors(c)) {
+                relax(fringe, edgeTo, distTo, c, n, visited);
+            }
+        }
+        return new ArrayList<>(); // if search failed, return empty array
+    }
+
+    private void relax(ArrayHeapMinPQ<Integer> pQ, HashMap<Integer, Integer> path
+            , HashMap<Integer, Double> distTo, int from, int to
+            , HashSet<Integer> visited) {
+        if (distTo.get(from) == null) {
+            return;
+        } else if (distTo.get(to) == null) {
+            if (!pQ.contains(to) && !visited.contains(to)) {
+                distTo.put(to, distTo.get(from) + 1);
+                path.put(to, from);
+                pQ.add(to, distTo.get(to));
+            }
+        }
+    }
+
+    public ArrayList<Coordinate> extractPath(HashMap<Integer, Integer> edgeTo, Integer start, Integer end) {
+        ArrayList<Coordinate> path = new ArrayList<>();
+        Stack<Integer> s = new Stack<>();
+        int c = end;
+        while (c != start) {
+            s.push(c);
+            c = edgeTo.get(c);
+        }
+        while (!s.isEmpty()) {
+            path.add(convertToCoordinate(s.pop()));
+        }
+        return path;
+    }
+
+    private ArrayList<Integer> getNeighbors(int val) {
+        Coordinate c = convertToCoordinate(val);
+        ArrayList<Integer> result = new ArrayList<>();
+        try {
+            if (c.getX() + 1 < HEIGHT && gameGrid[c.getX() + 1][c.getY()] != Tileset.WALL) {
+                result.add(convertToInt(new Coordinate(c.getX() + 1, c.getY())));
+            }
+            if (c.getX() - 1 >= 0 && gameGrid[c.getX() - 1][c.getY()] != Tileset.WALL) {
+                result.add(convertToInt(new Coordinate(c.getX() - 1, c.getY())));
+            }
+            if (c.getY() + 1 < WIDTH && gameGrid[c.getX()][c.getY() + 1] != Tileset.WALL) {
+                result.add(convertToInt(new Coordinate(c.getX(), c.getY() + 1)));
+            }
+            if (c.getY() - 1 >= 0 && gameGrid[c.getX()][c.getY() - 1] != Tileset.WALL) {
+                result.add(convertToInt(new Coordinate(c.getX(), c.getY() - 1)));
+            }
+        } catch (Exception e) {
+            System.out.println("Error occured when extracting neighbors");
+            return new ArrayList<>();
+        }
+        return result;
     }
 
     /**

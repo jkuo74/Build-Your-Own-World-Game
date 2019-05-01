@@ -6,10 +6,9 @@ import java.util.Random;
 
 public class Hero extends Player {
     int numKeys;
-    int health;
 
     public Hero(Engine e, TETile tile, Coordinate c, Random r, int numKeys) {
-        super(e, tile, c, r);
+        super(e, tile, c, r, 5);
         this.numKeys = numKeys;
         health = 4;
     }
@@ -22,6 +21,7 @@ public class Hero extends Player {
         return numKeys == 0;
     }
 
+    @Override
     public void play(char c) {
         keyboardInput(c);
     }
