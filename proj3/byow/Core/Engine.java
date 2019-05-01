@@ -97,21 +97,23 @@ public class Engine {
         for (int n = 0; n < portals.length; n++) {
             portals[n] = placePortal();
         }
-        // TODO save and load other players.
+
+        int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
+        players = new HashSet<>();
+        for (int i = 0; i < numOfEnemies; i++) {
+            players.add(placeWarrior(hero));
+        }
+
         if (isLoad) {
             String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 hero.play(rest.charAt(j));
-            }
-        } else {
-            // TODO If didn't load players, Initialize players and random locations
-            // TODO num of players needs to be a soft function of number of floor tiles
-            int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
-            players = new HashSet<>();
-            for (int i = 0; i < numOfEnemies; i++) {
-                players.add(placeWarrior(hero));
+                for (Player w : players) {
+                    w.play(rest.charAt(j));
+                }
             }
         }
+
         hud();
         ter.renderFrame(gameGrid);
 
