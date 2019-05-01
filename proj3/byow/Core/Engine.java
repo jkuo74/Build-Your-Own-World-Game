@@ -47,7 +47,7 @@ public class Engine {
 
     }
 
-    private void _HUD() {
+    private void hud() {
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.text(3, 1, "Health: " + hero.health);
@@ -62,7 +62,7 @@ public class Engine {
     }
 
     public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
-        //ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
 
@@ -104,8 +104,8 @@ public class Engine {
                 players.add(placeWarrior(hero));
             }
         }
-        //_HUD();
-        //ter.renderFrame(gameGrid);
+        hud();
+        ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -124,8 +124,8 @@ public class Engine {
                         w.play(c);
                     }
                 }
-                //_HUD();
-                //ter.renderFrame(gameGrid);
+                hud();
+                ter.renderFrame(gameGrid);
 
             }
         }
@@ -639,7 +639,8 @@ public class Engine {
                     floorMap.put(floorMap.size(), new Coordinate(col, row));
                 } else if (gameGrid[col][row] == Tileset.WALL
                         && checkBoundary(new Room(Tileset.FLOOR, col, row, 1, 1), Tileset.FLOOR)
-                        && checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1), Tileset.NOTHING)) {
+                        && checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1),
+                        Tileset.NOTHING)) {
                     wallMap.put(wallMap.size(), new Coordinate(col, row));
                 }
             }
