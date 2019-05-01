@@ -21,7 +21,7 @@ public class Engine {
     private static final int HEIGHT = 40;
     Hero hero;
     ArrayList<Warrior> players;
-    Element Door;
+    Element door;
     boolean endGame = false;
     Random rng;
     Portal[] portals;
@@ -47,7 +47,7 @@ public class Engine {
 
     }
 
-    private void HUD() {
+    private void _HUD() {
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.text(3, 1, "Health: " + hero.health);
@@ -81,7 +81,7 @@ public class Engine {
         generateMaps();
         int numKeys = Math.max(4, rng.nextInt(floorMap.size() / 50));
         hero = placeHero(numKeys);
-        Door = placeElement(wallMap, Tileset.LOCKED_DOOR);
+        door = placeElement(wallMap, Tileset.LOCKED_DOOR);
         for (int n = 0; n < numKeys; n++) {
             placeElement(floorMap, Tileset.TREE);
         }
@@ -104,7 +104,7 @@ public class Engine {
                 players.add(placeWarrior(hero));
             }
         }
-        HUD();
+        _HUD();
         ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
@@ -124,7 +124,7 @@ public class Engine {
                         w.play(c);
                     }
                 }
-                HUD();
+                _HUD();
                 ter.renderFrame(gameGrid);
 
             }
@@ -142,19 +142,16 @@ public class Engine {
      */
 
     private boolean quitSequence(char c, String s) {
-        if (s.length() > 0 && s.charAt(s.length() - 1) == ':'
-                && (c == 'q' || c == 'Q')) {
-            return true;
-        }
-        return false;
+        return s.length() > 0 && s.charAt(s.length() - 1) == ':'
+                && (c == 'q' || c == 'Q');
     }
 
     /**
      * Function returns an array with Random object and "rest" string.
      * Used to initialize a word with an appropriate seed.
      *
-     * @param input
-     * @return
+     * @param input input String
+     * @return returns an array of a rng and a string of inputs
      */
     private Object[] generateSeed(String input) {
         Object[] result = new Object[2];
@@ -251,7 +248,7 @@ public class Engine {
      * Finds a valid coordinate to place element on given set of tiles
      *
      * @param tiles Valid tiles to initialize elements on
-     * @param tile tile to represent the element
+     * @param tile  tile to represent the element
      * @return returns the element
      */
     private Element placeElement(HashMap<Integer, Coordinate> tiles, TETile tile) {
@@ -364,6 +361,8 @@ public class Engine {
                     }
                 }
                 break;
+            default:
+                return hit;
         }
         return hit;
     }
@@ -390,8 +389,8 @@ public class Engine {
             if (!indy.hasAllKeys()) {
                 pickUpKey(pX + moveX, pY + moveY, indy);
                 if (indy.hasAllKeys()) {
-                    Door.id = Tileset.UNLOCKED_DOOR;
-                    gameGrid[Door.getX()][Door.getY()] = Door.id;
+                    door.id = Tileset.UNLOCKED_DOOR;
+                    gameGrid[door.getX()][door.getY()] = door.id;
                 }
             } else {
                 if (checkBoundary(new Room(Tileset.UNLOCKED_DOOR, pX, pY, 1, 1),
@@ -417,8 +416,8 @@ public class Engine {
     /**
      * If the coordinate to be moved to is a key then have the hero pick it up
      *
-     * @param x x-Coordinate
-     * @param y y-Coordinate
+     * @param x    x-Coordinate
+     * @param y    y-Coordinate
      * @param hero Hero to pick up key
      */
     private void pickUpKey(int x, int y, Hero hero) {
@@ -530,7 +529,7 @@ public class Engine {
      * @param height Height of the area to be created
      */
     private void addArea(int lLX, int lLY,
-                        int width, int height, TETile tile) {
+                         int width, int height, TETile tile) {
         for (int row = Math.max(1, lLY); row < lLY + height && row < HEIGHT - 1; row++) {
             for (int col = Math.max(1, lLX); col < lLX + width && col < WIDTH - 1; col++) {
                 gameGrid[col][row] = tile;
@@ -638,9 +637,9 @@ public class Engine {
             for (int row = 0; row < gameGrid[0].length; row++) {
                 if (gameGrid[col][row] == Tileset.FLOOR) {
                     floorMap.put(floorMap.size(), new Coordinate(col, row));
-                } else if (gameGrid[col][row] == Tileset.WALL &&
-                        checkBoundary(new Room(Tileset.FLOOR, col, row, 1, 1), Tileset.FLOOR) &&
-                        checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1), Tileset.NOTHING)) {
+                } else if (gameGrid[col][row] == Tileset.WALL
+                        && checkBoundary(new Room(Tileset.FLOOR, col, row, 1, 1), Tileset.FLOOR)
+                        && checkBoundary(new Room(Tileset.NOTHING, col, row, 1, 1), Tileset.NOTHING)) {
                     wallMap.put(wallMap.size(), new Coordinate(col, row));
                 }
             }
