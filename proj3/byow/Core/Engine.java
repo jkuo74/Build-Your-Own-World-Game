@@ -12,7 +12,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-public class Engine {
+public class Engine implements Serializable {
     TERenderer ter = new TERenderer();
     TETile[][] gameGrid;
 
@@ -72,8 +72,8 @@ public class Engine {
         StdDraw.show();
     }
 
-    public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
-        //ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+    public TETile[][] runGame(String input, HashSet ps, boolean isKeyboard, boolean isLoad) {
+        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
 
@@ -90,6 +90,7 @@ public class Engine {
         Room[] rooms = new Room[numRooms];
         createWorld(rooms);
         generateMaps();
+
         int numKeys = Math.max(4, rng.nextInt(floorMap.size() / 50));
         hero = placeHero(numKeys);
         door = placeElement(wallMap, Tileset.LOCKED_DOOR);
@@ -101,25 +102,29 @@ public class Engine {
             portals[n] = placePortal();
         }
 
-        int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
-        players = new HashSet<>();
-        for (int i = 0; i < numOfEnemies; i++) {
-            players.add(placeWarrior(hero));
-        }
-        hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
-
         if (isLoad) {
             String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 hero.play(rest.charAt(j));
-                for (Player w : players) {
-                    w.play(rest.charAt(j));
+            }
+            players = ps;
+            for (Player pl: players) {
+                if (pl instanceof Warrior) {
+                    placeExistingWarrior((Warrior) pl);
                 }
             }
+            System.out.println("Number of warriors: " + players.size());
+        } else {
+            int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
+            players = new HashSet<>();
+            for (int i = 0; i < numOfEnemies; i++) {
+                players.add(placeWarrior(hero));
+            }
+            hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
 
-        //hud();
-        //ter.renderFrame(gameGrid);
+        hud();
+        ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -130,7 +135,7 @@ public class Engine {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
                     if (quitSequence(c, prevChar)) {
-                        quitAndSave(input + userInput);
+                        quitAndSave(input + userInput, players);
                     }
                     hero.play(c);
                     // If non-action key pressed, Nothing should happen
@@ -150,7 +155,7 @@ public class Engine {
                     }
                 }
                 hud();
-                //ter.renderFrame(gameGrid);
+                ter.renderFrame(gameGrid);
             }
         }
         return gameGrid;
@@ -221,12 +226,15 @@ public class Engine {
     // @Source: Editor class
     public void loadSavedGame() {
         String savedInput = "";
+        HashSet ps = new HashSet();
         File f = new File("./save.txt");
         if (f.exists()) {
             try {
                 FileInputStream fs = new FileInputStream(f);
                 ObjectInputStream os = new ObjectInputStream(fs);
-                savedInput = (String) os.readObject();
+                ArrayList<Object> woi = (ArrayList<Object>) os.readObject();
+                savedInput = (String) woi.get(0);
+                ps = (HashSet) woi.get(1);
             } catch (FileNotFoundException e) {
                 System.out.println("file not found");
                 System.exit(0);
@@ -238,7 +246,7 @@ public class Engine {
                 System.exit(0);
             }
             // run startNewGame running the "rest" commands
-            runGame(savedInput, true, true);
+            runGame(savedInput, ps, true, true);
         }
     }
 
@@ -248,7 +256,7 @@ public class Engine {
      * @param s: string of all user input including seed
      */
     // @Source: Editor class
-    private void quitAndSave(String s) {
+    private void quitAndSave(String s, HashSet<Player> ps) {
         File f = new File("./save.txt");
         try {
             if (!f.exists()) {
@@ -256,7 +264,10 @@ public class Engine {
             }
             FileOutputStream fs = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fs);
-            os.writeObject(s);
+            ArrayList<Object> woi = new ArrayList<>();
+            woi.add(s);
+            woi.add(ps);
+            os.writeObject(woi);
             System.out.println("file saved successfully, thanks for playing!");
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
@@ -321,10 +332,12 @@ public class Engine {
         int place = rng.nextInt(floorMap.size());
         Coordinate coord = floorMap.get(place);
         gameGrid[coord.getX()][coord.getY()] = Tileset.WARRIOR;
-
         return new Warrior(this, Tileset.WARRIOR, coord.copy(), rng, h);
     }
 
+    private void placeExistingWarrior(Warrior w) {
+        gameGrid[w.getX()][w.getY()] = Tileset.WARRIOR;
+    }
     /**
      * Hero can shoot enemies in a range of 3 steps.  Hits with .66 chance.
      * Effectively, function will look for a range of 3 tiles in the
@@ -637,7 +650,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        return runGame(input, false, true);
+        return runGame(input, new HashSet(), false, true);
     }
 
     /**

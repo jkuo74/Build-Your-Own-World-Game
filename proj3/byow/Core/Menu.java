@@ -3,6 +3,7 @@ package byow.Core;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.util.HashSet;
 
 public class Menu {
 
@@ -112,7 +113,7 @@ public class Menu {
         }
         if (isSeedValid()) {
             addChar('S');
-            engine.runGame(newGameInput, true, false);
+            engine.runGame(newGameInput, new HashSet(), true, false);
         } else {
             System.out.println("Invalid seed input");
             System.exit(0);

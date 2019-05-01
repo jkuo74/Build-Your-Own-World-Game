@@ -2,7 +2,9 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 
-public class Element {
+import java.io.Serializable;
+
+public class Element implements Serializable {
     protected Coordinate coord;
     TETile id;
 
