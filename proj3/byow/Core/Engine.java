@@ -80,6 +80,8 @@ public class Engine implements Serializable {
         Object[] commands = generateSeed(input);
         // If seed could not be generated, return
         if (commands[0] == null || commands[1] == null) {
+            System.out.println("World never created");
+            createWorld(new Room[0]);
             return gameGrid;
         }
 
@@ -113,7 +115,6 @@ public class Engine implements Serializable {
                     placeExistingWarrior((Warrior) pl);
                 }
             }
-            System.out.println("Number of warriors: " + players.size());
         } else {
             int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
             players = new HashSet<>();
