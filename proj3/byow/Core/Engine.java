@@ -736,6 +736,8 @@ public class Engine {
      * wallMap.
      */
     private void generateMaps() {
+        floorMap.clear();
+        wallMap.clear();
         for (int col = 0; col < gameGrid.length; col++) {
             for (int row = 0; row < gameGrid[0].length; row++) {
                 if (gameGrid[col][row] == Tileset.FLOOR) {
