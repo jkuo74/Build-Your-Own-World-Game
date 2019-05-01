@@ -9,7 +9,6 @@ import edu.princeton.cs.introcs.StdDraw;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -22,9 +21,11 @@ public class Engine {
     private static final int WIDTH = 70;
     private static final int HEIGHT = 40;
     HashSet<Player> players;
+    Hero hero;
     Element Door;
     boolean endGame = false;
     Random rng;
+    Portal[] portals;
     HashMap<Integer, Coordinate> floorMap = new HashMap<>();
     HashMap<Integer, Coordinate> wallMap = new HashMap<>();
 
@@ -47,8 +48,22 @@ public class Engine {
 
     }
 
+    private void HUD() {
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.text(3, 1, "Health: " + hero.health);
+        StdDraw.text(9, 1, "Enemies Left: " + players.size());
+        StdDraw.text(16, 1, "Keys Left: " + hero.numKeys);
+        int x = (int) Math.floor(StdDraw.mouseX());
+        int y = (int) Math.floor(StdDraw.mouseY()) - 3;
+        if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
+            StdDraw.text(25, 1, gameGrid[x][y].description());
+        }
+        StdDraw.show();
+    }
+
     public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
-        ter.initialize(WIDTH, HEIGHT);
+        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
 
@@ -66,13 +81,15 @@ public class Engine {
         createWorld(rooms);
         generateMaps();
         int numKeys = Math.max(4, rng.nextInt(floorMap.size() / 50));
-        Hero hero = placeHero(numKeys);
+        hero = placeHero(numKeys);
         Door = placeElement(wallMap, Tileset.LOCKED_DOOR);
         for (int n = 0; n < numKeys; n++) {
             placeElement(floorMap, Tileset.TREE);
-
         }
-
+        portals = new Portal[(WIDTH + HEIGHT) / Math.min(WIDTH, HEIGHT)];
+        for (int n = 0; n < portals.length; n++) {
+            portals[n] = placePortal();
+        }
         // TODO save and load other players.
         if (isLoad) {
             String rest = (String) commands[1];
@@ -88,7 +105,7 @@ public class Engine {
                 players.add(placeWarrior(hero));
             }
         }
-
+        HUD();
         ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
@@ -107,8 +124,9 @@ public class Engine {
                     for (Player w : players) {
                         w.play(c);
                     }
-                    ter.renderFrame(gameGrid);
                 }
+                HUD();
+                ter.renderFrame(gameGrid);
 
             }
         }
@@ -121,7 +139,7 @@ public class Engine {
      *
      * @param c: very last char inputted by user
      * @param s: sequence of previous inputs by user.
-     * @return
+     * @return returns true if player inputs correct sequence to quit, false if not
      */
 
     private boolean quitSequence(char c, String s) {
@@ -139,7 +157,7 @@ public class Engine {
      * @param input
      * @return
      */
-    public Object[] generateSeed(String input) {
+    private Object[] generateSeed(String input) {
         Object[] result = new Object[2];
         char prefix = input.charAt(0);
         String seedString = "";
@@ -232,15 +250,32 @@ public class Engine {
 
     /**
      * Finds a valid coordinate to place element on given set of tiles
+     *
      * @param tiles Valid tiles to initialize elements on
-     * @param tile
-     * @return
+     * @param tile tile to represent the element
+     * @return returns the element
      */
     private Element placeElement(HashMap<Integer, Coordinate> tiles, TETile tile) {
         int place = rng.nextInt(tiles.size());
         Coordinate coord = tiles.get(place);
         gameGrid[coord.getX()][coord.getY()] = tile;
         return new Element(tile, coord.copy());
+    }
+
+    /**
+     * Find two valid walls to place portals
+     *
+     * @return returns a portal
+     */
+    private Portal placePortal() {
+        int place1 = rng.nextInt(wallMap.size());
+        int place2 = rng.nextInt(wallMap.size());
+
+        Coordinate coord1 = wallMap.get(place1);
+        Coordinate coord2 = wallMap.get(place2);
+        gameGrid[coord1.getX()][coord1.getY()] = Tileset.WATER;
+        gameGrid[coord2.getX()][coord2.getY()] = Tileset.WATER;
+        return new Portal(Tileset.WATER, coord1.copy(), coord2.copy());
     }
 
     /**
@@ -348,12 +383,6 @@ public class Engine {
             }
         }
     }
-    /**
-     * Move character given "WASD" movement directions
-     *
-     * @param grid  World to move on
-     * @param input Given input character
-     */
 
     /**
      * Moves character to another adjacent tile given move direction and successfully moves if
@@ -363,18 +392,11 @@ public class Engine {
      * @param moveX Change in coordinate in X direction
      * @param moveY Change in coordinate in Y direction
      */
-    public void move(int moveX, int moveY, Player p) {
+    public boolean move(int moveX, int moveY, Player p) {
         int pX = p.getX();
         int pY = p.getY();
-        TETile avatar;
-        if (p instanceof Hero) {
-            avatar = Tileset.INDIANA;
-        } else if (p instanceof Warrior) {
-            avatar = Tileset.WARRIOR;
-        } else {
-            avatar = Tileset.AVATAR;
-        }
-        if (avatar == Tileset.INDIANA) {
+        Coordinate coord = new Coordinate(pX + moveX, pY + moveY);
+        if (p.getID() == Tileset.INDIANA) {
             Hero indy = (Hero) p;
             if (!indy.hasAllKeys()) {
                 pickUpKey(pX + moveX, pY + moveY, indy);
@@ -389,22 +411,28 @@ public class Engine {
                 }
             }
         }
-
+        for (int n = 0; n < portals.length; n++) {
+            if (portals[n].equals(coord)) {
+                return portals[n].transport(coord, p);
+            }
+        }
         if (gameGrid[pX + moveX][pY + moveY] == Tileset.FLOOR) {
-            gameGrid[pX + moveX][pY + moveY] = avatar;
+            gameGrid[pX + moveX][pY + moveY] = p.getID();
             gameGrid[pX][pY] = Tileset.FLOOR;
             p.setCoords(pX + moveX, pY + moveY);
-
+            return true;
         }
+        return false;
     }
 
     /**
      * If the coordinate to be moved to is a key then have the hero pick it up
-     * @param x
-     * @param y
-     * @param hero
+     *
+     * @param x x-Coordinate
+     * @param y y-Coordinate
+     * @param hero Hero to pick up key
      */
-    public void pickUpKey(int x, int y, Hero hero) {
+    private void pickUpKey(int x, int y, Hero hero) {
         if (gameGrid[x][y] == Tileset.TREE) {
             hero.takeKey();
             gameGrid[x][y] = Tileset.FLOOR;
@@ -558,7 +586,7 @@ public class Engine {
      *
      * @param rooms Room to create.
      */
-    public void createWorld(Room[] rooms) {
+    private void createWorld(Room[] rooms) {
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 gameGrid[x][y] = Tileset.NOTHING;
@@ -586,7 +614,7 @@ public class Engine {
      * @param tile Tile to look for around the room
      * @return Returns true if tile found, false if not
      */
-    public  boolean checkBoundary(Room room, TETile tile) {
+    private boolean checkBoundary(Room room, TETile tile) {
         int roomX = room.getX();
         int roomY = room.getY();
         int roomHeight = room.getHeight();
@@ -618,8 +646,8 @@ public class Engine {
      * @param width  Width of the are to be created
      * @param height Height of the area to be created
      */
-    public void addArea(int lLX, int lLY,
-                               int width, int height, TETile tile) {
+    private void addArea(int lLX, int lLY,
+                        int width, int height, TETile tile) {
         for (int row = Math.max(1, lLY); row < lLY + height && row < HEIGHT - 1; row++) {
             for (int col = Math.max(1, lLX); col < lLX + width && col < WIDTH - 1; col++) {
                 gameGrid[col][row] = tile;
@@ -660,7 +688,7 @@ public class Engine {
      * @param height Height of the area to be created
      * @return Returns initialized Room object
      */
-    public Room addRoom(int width, int height, TETile tile) {
+    private Room addRoom(int width, int height, TETile tile) {
         int lLX = Math.max(1, Math.abs(rng.nextInt()) % (WIDTH - width - 1));
         int lLY = Math.max(1, Math.abs(rng.nextInt()) % (HEIGHT - height - 1));
         addArea(lLX, lLY, width, height, tile);
@@ -673,10 +701,10 @@ public class Engine {
      * if orientation is true, create hallways in a mirrored L shape or upside-down mirrored L shape
      * else create hallways in a create hallways in a L shape or upside-down L shape
      *
-     * @param room1
-     * @param room2
+     * @param room1 room to connect
+     * @param room2 other room to connect
      */
-    public void connectRooms(Room room1, Room room2, TETile tile) {
+    private void connectRooms(Room room1, Room room2, TETile tile) {
         Room leftMost = (room1.getX() < room2.getX()) ? room1 : room2;
         Room rightMost = (leftMost == room1) ? room2 : room1;
 
@@ -693,10 +721,10 @@ public class Engine {
      * Length limits are set to the horizontal/vertical
      * distance respectively with added lengths based on room sizes
      *
-     * @param room1
-     * @param room2
+     * @param room1 room to add hallway to
+     * @param room2 other room to add hallway to
      */
-    public void addHallway(Room room1, Room room2, TETile tile) {
+    private void addHallway(Room room1, Room room2, TETile tile) {
         int widthGive = Math.max(room1.getWidth(), room2.getWidth());
         int heightGive = Math.max(room1.getHeight(), room2.getHeight());
         int widthLimit = Math.abs(room1.getX() - room2.getX()) + widthGive;
@@ -722,7 +750,7 @@ public class Engine {
      * floorMap. All points in the grid that are walls and is adjacent to a floor is added to the
      * wallMap.
      */
-    public void generateMaps() {
+    private void generateMaps() {
         for (int col = 0; col < gameGrid.length; col++) {
             for (int row = 0; row < gameGrid[0].length; row++) {
                 if (gameGrid[col][row] == Tileset.FLOOR) {

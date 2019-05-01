@@ -3,11 +3,12 @@ package byow.Core;
 import byow.TileEngine.TETile;
 
 public class Element {
-    private Coordinate coord;
+    protected Coordinate coord;
     TETile id;
 
     public Element(TETile tile, Coordinate c) {
         coord = c;
+        id = tile;
     }
 
     public int getX() {
@@ -18,12 +19,16 @@ public class Element {
         return coord.getY();
     }
 
-    public Coordinate getC() {
-        return coord;
+    public Coordinate getCoord() {
+        return coord.copy();
     }
 
     public void setCoords(int x, int y) {
         coord.setX(x);
         coord.setY(y);
+    }
+
+    public TETile getID() {
+        return id;
     }
 }

@@ -24,23 +24,17 @@ public class Coordinate {
     public void setY(int y) {
         Y = y;
     }
+
     public Coordinate copy() {
         return new Coordinate(X, Y);
     }
 
     @Override
     public boolean equals(Object o) {
-
-        if (o == this) {
-            return true;
+        if (o instanceof Coordinate) {
+            Coordinate c = (Coordinate) o;
+            return X == c.X && Y == c.Y;
         }
-
-        if (!(o instanceof Coordinate)) {
-            return false;
-        }
-
-        Coordinate c = (Coordinate) o;
-        return X == c.getX()
-                && Y == c.getY();
+        return false;
     }
 }

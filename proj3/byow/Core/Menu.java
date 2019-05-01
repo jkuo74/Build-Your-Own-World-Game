@@ -17,6 +17,7 @@ public class Menu {
         this.engine = e;
         this.newGameInput = "";
     }
+
     public void initialize() {
         StdDraw.setCanvasSize(width * 16, height * 16);
         Font font = new Font("Monaco", Font.BOLD, 30);
@@ -48,7 +49,7 @@ public class Menu {
     public void newGameMenu() {
         int midWidth = width / 2;
         int titleHeight = height * 4 / 5;
-        int midHeight = height / 2 ;
+        int midHeight = height / 2;
 
 
         StdDraw.clear(Color.BLACK);
@@ -101,7 +102,8 @@ public class Menu {
                     case 's':
                         flag = false;
                         break;
-                    default: addChar(c);
+                    default:
+                        addChar(c);
                 }
             }
             newGameMenu();
