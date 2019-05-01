@@ -69,16 +69,10 @@ public class Engine {
         StdDraw.show();
     }
 
-    public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
-        //ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+    public void runLoad(String input) {
         gameGrid = new TETile[WIDTH][HEIGHT];
-
-
+        System.out.println(input);
         Object[] commands = generateSeed(input);
-        // If seed could not be generated, return
-        if (commands[0] == null || commands[1] == null) {
-            return gameGrid;
-        }
 
         rng = (Random) commands[0];
         int maxGenFactor = (WIDTH + HEIGHT) / 2;
@@ -104,29 +98,71 @@ public class Engine {
             players.add(placeWarrior(hero));
         }
 
-        if (isLoad) {
-            String rest = (String) commands[1];
-            for (int j = 0; j < rest.length(); j++) {
-                hero.play(rest.charAt(j));
+        String toRead = (String) commands[1];
+        for (int n = 0; n < toRead.length(); n++) {
+                char c = toRead.charAt(n);
+                hero.play(c);
                 for (Player w : players) {
-                    w.play(rest.charAt(j));
+                    w.play(c);
+                    if (hero.isDead()) {
+                        endGame = true;
+                        heroAlive = false;
+                    }
                 }
+            }
+    }
+
+    public TETile[][] runGame(String input, boolean isKeyboard, boolean isLoad) {
+        if(isLoad) {
+            runLoad(input);
+        } else {
+            ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+            gameGrid = new TETile[WIDTH][HEIGHT];
+
+
+            Object[] commands = generateSeed(input);
+            // If seed could not be generated, return
+            if (commands[0] == null || commands[1] == null) {
+                return gameGrid;
+            }
+
+            rng = (Random) commands[0];
+            int maxGenFactor = (WIDTH + HEIGHT) / 2;
+            int minGenFactor = (WIDTH + HEIGHT) / 10;
+            int numRooms = (Math.abs(rng.nextInt()) % (maxGenFactor - minGenFactor)) + minGenFactor;
+            Room[] rooms = new Room[numRooms];
+            createWorld(rooms);
+            generateMaps();
+            int numKeys = Math.max(4, rng.nextInt(floorMap.size() / 50));
+            hero = placeHero(numKeys);
+            door = placeElement(wallMap, Tileset.LOCKED_DOOR);
+            for (int n = 0; n < numKeys; n++) {
+                placeElement(floorMap, Tileset.TREE);
+            }
+            portals = new Portal[(WIDTH + HEIGHT) / Math.min(WIDTH, HEIGHT)];
+            for (int n = 0; n < portals.length; n++) {
+                portals[n] = placePortal();
+            }
+
+            int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
+            players = new HashSet<>();
+            for (int i = 0; i < numOfEnemies; i++) {
+                players.add(placeWarrior(hero));
             }
         }
 
-        //hud();
-        //ter.renderFrame(gameGrid);
-
+        hud();
+        ter.renderFrame(gameGrid);
+        String userInput = input;
         // Only if keyboard is allowed
         if (isKeyboard) {
-
-            String userInput = "";
             while (!endGame) {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
                     if (quitSequence(c, userInput)) {
-                        userInput += c;
-                        quitAndSave(input + userInput);
+                        System.out.println(userInput);
+                        quitAndSave(userInput.substring(0, userInput.length() - 1));
+                        break;
                     }
                     userInput += c;
                     hero.play(c);
@@ -138,8 +174,8 @@ public class Engine {
                         }
                     }
                 }
-                //hud();
-                //ter.renderFrame(gameGrid);
+                hud();
+                ter.renderFrame(gameGrid);
             }
         }
         return gameGrid;
@@ -176,6 +212,7 @@ public class Engine {
             i += 1;
         }
         char endSeedChar = input.charAt(i);
+
         result[1] = input.substring(i + 1); // "rest string - commands to execute
 
         // Check prefix, suffix, and that input contains only digits.
