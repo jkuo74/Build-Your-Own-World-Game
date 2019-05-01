@@ -62,12 +62,12 @@ public class Engine {
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.text(3, 1, "Health: " + hero.health);
         StdDraw.text(9, 1, " Enemies Left: " + players.size());
-        StdDraw.text(17, 1, " Keys Left: " + hero.numKeys);
-        StdDraw.text(24, 1, " Bullets Left: " + hero.getBullets());
+        StdDraw.text(18, 1, " Keys Left: " + hero.numKeys);
+        StdDraw.text(26, 1, " Bullets Left: " + hero.getBullets());
         int x = (int) Math.floor(StdDraw.mouseX());
         int y = (int) Math.floor(StdDraw.mouseY()) - 3;
         if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
-            StdDraw.text(34, 1, gameGrid[x][y].description());
+            StdDraw.text(36, 1, gameGrid[x][y].description());
         }
         StdDraw.show();
     }
@@ -100,22 +100,24 @@ public class Engine {
         for (int n = 0; n < portals.length; n++) {
             portals[n] = placePortal();
         }
-        // TODO save and load other players.
+
+        int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
+        players = new HashSet<>();
+        for (int i = 0; i < numOfEnemies; i++) {
+            players.add(placeWarrior(hero));
+        }
+
         if (isLoad) {
             String rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 hero.play(rest.charAt(j));
-            }
-        } else {
-            // TODO If didn't load players, Initialize players and random locations
-            // TODO num of players needs to be a soft function of number of floor tiles
-            int numOfEnemies = Math.abs(rng.nextInt() % 10) + 1;
-            players = new HashSet<>();
-            for (int i = 0; i < numOfEnemies; i++) {
-                players.add(placeWarrior(hero));
+                for (Player w : players) {
+                    w.play(rest.charAt(j));
+                }
             }
             hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
+
         hud();
         ter.renderFrame(gameGrid);
 
