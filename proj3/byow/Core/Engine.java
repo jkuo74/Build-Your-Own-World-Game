@@ -106,6 +106,7 @@ public class Engine {
         for (int i = 0; i < numOfEnemies; i++) {
             players.add(placeWarrior(hero));
         }
+        hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
 
         if (isLoad) {
             String rest = (String) commands[1];
@@ -115,7 +116,6 @@ public class Engine {
                     w.play(rest.charAt(j));
                 }
             }
-            hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
 
         hud();
