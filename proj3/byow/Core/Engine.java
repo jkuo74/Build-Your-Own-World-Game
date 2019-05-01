@@ -5,6 +5,8 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.HelperFunction.*;
 import edu.princeton.cs.introcs.StdDraw;
+import static java.lang.Character.toLowerCase;
+
 
 import java.awt.*;
 import java.io.*;
@@ -60,11 +62,12 @@ public class Engine {
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.text(3, 1, "Health: " + hero.health);
         StdDraw.text(9, 1, " Enemies Left: " + players.size());
-        StdDraw.text(16, 1, " Keys Left: " + hero.numKeys);
+        StdDraw.text(17, 1, " Keys Left: " + hero.numKeys);
+        StdDraw.text(24, 1, " Bullets Left: " + hero.getBullets());
         int x = (int) Math.floor(StdDraw.mouseX());
         int y = (int) Math.floor(StdDraw.mouseY()) - 3;
         if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
-            StdDraw.text(25, 1, gameGrid[x][y].description());
+            StdDraw.text(34, 1, gameGrid[x][y].description());
         }
         StdDraw.show();
     }
@@ -111,6 +114,7 @@ public class Engine {
             for (int i = 0; i < numOfEnemies; i++) {
                 players.add(placeWarrior(hero));
             }
+            hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
         hud();
         ter.renderFrame(gameGrid);
@@ -119,21 +123,28 @@ public class Engine {
         if (isKeyboard) {
 
             String userInput = "";
+            char prevChar = 'a';
             while (!endGame) {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
-                    if (quitSequence(c, userInput)) {
-                        userInput += c;
+                    if (quitSequence(c, prevChar)) {
                         quitAndSave(input + userInput);
                     }
-                    userInput += c;
                     hero.play(c);
-                    for (Player w : players) {
-                        w.play(c);
-                        if (hero.isDead()) {
-                            endGame = true;
-                            heroAlive = false;
+                    // If non-action key pressed, Nothing should happen
+                    if (actionKeyPressed(c)) {
+                        userInput += c;
+                        for (Player w : players) {
+                            w.play(c);
+                            if (hero.isDead()) {
+                                endGame = true;
+                                heroAlive = false;
+                            }
                         }
+                    } if (c == ':') {
+                        prevChar = ':';
+                    } else {
+                        prevChar = 'a';
                     }
                 }
                 hud();
@@ -144,17 +155,30 @@ public class Engine {
     }
 
     /**
+     * Prohibits enemies from moving if a non-action key was pressed
+     * Checking if a valid key was pressed.
+     * @param c
+     * @return
+     */
+    private boolean actionKeyPressed(char c) {
+        c = toLowerCase(c);
+        if (c == 'a' || c == 'w' || c == 's' || c == 'd'
+        || c == 'i' || c == 'l' || c == 'k' || c == 'j') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Given all previous inputs and the latest key inserted, check
      * if quit sequence was pressed
      *
      * @param c: very last char inputted by user
-     * @param s: sequence of previous inputs by user.
+     * @param prev: sequence of previous inputs by user.
      * @return returns true if player inputs correct sequence to quit, false if not
      */
-
-    private boolean quitSequence(char c, String s) {
-        return s.length() > 0 && s.charAt(s.length() - 1) == ':'
-                && (c == 'q' || c == 'Q');
+    private boolean quitSequence(char c, char prev) {
+        return prev == ':' && (c == 'q' || c == 'Q');
     }
 
     /**
@@ -309,9 +333,9 @@ public class Engine {
      */
     // TODO: Remove print statements.
     public boolean shoot(Player p, Direction dir, Random rng) {
-        int range = 3;
-        double probability = .67;
-        // shot misses with .33 probability
+        int range = 10;
+        double probability = 1;
+        // shot misses with 0 probability
         if (rng.nextDouble() > probability) {
             return false;
         }
@@ -448,7 +472,52 @@ public class Engine {
         return c.getX() * HEIGHT + c.getY();
     }
 
-    // TODO Toggle mode.
+    /**
+     * Show the paths of all warriors to hero.
+     * @param active: When false, the path would show. When true, revert
+     *              back to the original world.
+     */
+    public void showPaths(boolean active) {
+        for (Player w: players) {
+            if (w instanceof Warrior) {
+                LinkedList<Coordinate> path = ((Warrior) w).getPath();
+                if (!path.isEmpty()) {
+                    colorPath(path, active);
+                }
+            }
+        }
+        ter.renderFrame(gameGrid);
+        while (!active) {
+            char c = 'a';
+            if (StdDraw.hasNextKeyTyped()) {
+                c = StdDraw.nextKeyTyped();
+            }
+            if (toLowerCase(c) == 't') {
+                active = true;
+                showPaths(active);
+            }
+        }
+    }
+
+    private void colorPath(LinkedList<Coordinate> path, boolean active) {
+        TETile tile;
+        if (active) {
+            tile = Tileset.FLOOR;
+        } else {
+            tile = Tileset.SAND;
+        }
+        if (path.isEmpty()) {
+            return;
+        }
+        // We ignore the hero tile.
+        path.removeLast();
+
+        while (!path.isEmpty()) {
+            Coordinate c = path.removeFirst();
+            gameGrid[c.getX()][c.getY()] = tile;
+        }
+    }
+
     public ArrayList<Coordinate> performSearch(Coordinate begin, Coordinate finish) {
         int start = convertToInt(begin);
         int end = convertToInt(finish);
@@ -470,7 +539,6 @@ public class Engine {
             if (c == end) {
                 return extractPath(edgeTo, start, end);
             }
-
             for (int n : getNeighbors(c)) {
                 relax(fringe, edgeTo, distTo, c, n, visited);
             }
@@ -511,16 +579,24 @@ public class Engine {
         Coordinate c = convertToCoordinate(val);
         ArrayList<Integer> result = new ArrayList<>();
         try {
-            if (c.getX() + 1 < WIDTH && gameGrid[c.getX() + 1][c.getY()] != Tileset.WALL) {
+            if (c.getX() + 1 < WIDTH && gameGrid[c.getX() + 1][c.getY()] != Tileset.WALL
+                    && gameGrid[c.getX() + 1][c.getY()] != Tileset.TREE
+                    && gameGrid[c.getX() + 1][c.getY()] != Tileset.WARRIOR) {
                 result.add(convertToInt(new Coordinate(c.getX() + 1, c.getY())));
             }
-            if (c.getX() - 1 >= 0 && gameGrid[c.getX() - 1][c.getY()] != Tileset.WALL) {
+            if (c.getX() - 1 >= 0 && gameGrid[c.getX() - 1][c.getY()] != Tileset.WALL
+                    && gameGrid[c.getX() - 1][c.getY()] != Tileset.TREE
+                    && gameGrid[c.getX() - 1][c.getY()] != Tileset.WARRIOR) {
                 result.add(convertToInt(new Coordinate(c.getX() - 1, c.getY())));
             }
-            if (c.getY() + 1 < HEIGHT && gameGrid[c.getX()][c.getY() + 1] != Tileset.WALL) {
+            if (c.getY() + 1 < HEIGHT && gameGrid[c.getX()][c.getY() + 1] != Tileset.WALL
+                    && gameGrid[c.getX()][c.getY() + 1] != Tileset.TREE
+                    && gameGrid[c.getX()][c.getY() + 1] != Tileset.WARRIOR) {
                 result.add(convertToInt(new Coordinate(c.getX(), c.getY() + 1)));
             }
-            if (c.getY() - 1 >= 0 && gameGrid[c.getX()][c.getY() - 1] != Tileset.WALL) {
+            if (c.getY() - 1 >= 0 && gameGrid[c.getX()][c.getY() - 1] != Tileset.WALL
+                    && gameGrid[c.getX()][c.getY() - 1] != Tileset.TREE
+                    && gameGrid[c.getX()][c.getY() - 1] != Tileset.WARRIOR) {
                 result.add(convertToInt(new Coordinate(c.getX(), c.getY() - 1)));
             }
         } catch (Exception e) {

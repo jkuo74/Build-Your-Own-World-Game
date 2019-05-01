@@ -3,16 +3,19 @@ package byow.Core;
 import byow.TileEngine.TETile;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
 
 
 public class Warrior extends Player {
     Hero hero;
     boolean freeze = false; // After warrior hits hero, freezes for 1 turn
+    private ArrayList<Coordinate> path;
 
     public Warrior(Engine e, TETile tile, Coordinate c, Random r, Hero h) {
         super(e, tile, c, r, 2);
         this.hero = h;
+        path = new ArrayList<>();
     }
 
     @Override
@@ -23,12 +26,11 @@ public class Warrior extends Player {
         }
         double nextMove = rnd.nextDouble();
         if (manhattanDistance(hero, this) < 14) {
-            if (nextMove > 0.15) {
-                ArrayList<Coordinate> path = engine.performSearch(getCoord(), hero.getCoord());
-                if (path.isEmpty()) {
-                    moveRandomly();
-                    return;
-                }
+            path = engine.performSearch(getCoord(), hero.getCoord());
+
+            if (path.isEmpty() || nextMove > 0.85) {
+                moveRandomly();
+            } else {
                 Coordinate nextCoor = path.get(0);
                 Engine.Direction nextDir;
                 if ((nextCoor.getX() != getX() && nextCoor.getY() != getY())) {
@@ -45,8 +47,11 @@ public class Warrior extends Player {
                     nextDir = Engine.Direction.SOUTH;
                 }
                 move(nextDir);
+                path = engine.performSearch(getCoord(), hero.getCoord());
             }
         } else {
+            // If hero is too far, clear the path
+            path = new ArrayList<>();
             if (nextMove > 0.9) {
                 return; // don't move
             }
@@ -58,6 +63,12 @@ public class Warrior extends Player {
             hero.takeHit();
         }
     }
+
+    // Returns a copy of path
+    public LinkedList<Coordinate> getPath() {
+        return new LinkedList<>(path);
+    }
+
     private void moveRandomly() {
         ArrayList<Engine.Direction> directions = new ArrayList<>();
         directions.add(Engine.Direction.NORTH);
@@ -65,13 +76,20 @@ public class Warrior extends Player {
         directions.add(Engine.Direction.EAST);
         directions.add(Engine.Direction.WEST);
         moveValid(directions);
+        if (manhattanDistance(hero, this) < 14) {
+            path = engine.performSearch(getCoord(), hero.getCoord());
+        }
     }
 
     private void moveValid(ArrayList<Engine.Direction> directions) {
+        if (directions.isEmpty()) {
+            return;
+        }
         int nextMove = rnd.nextInt(directions.size());
         if (!move((directions.get(nextMove)))) {
             directions.remove(nextMove);
             moveValid(directions);
         }
     }
+
 }

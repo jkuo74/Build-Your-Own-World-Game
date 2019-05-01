@@ -3,13 +3,16 @@ package byow.Core;
 import byow.TileEngine.TETile;
 
 import java.util.Random;
+import static java.lang.Character.toLowerCase;
 
 public class Hero extends Player {
     int numKeys;
+    int bullets;
 
     public Hero(Engine e, TETile tile, Coordinate c, Random r, int numKeys) {
         super(e, tile, c, r, 5);
         this.numKeys = numKeys;
+        bullets = 10;
     }
 
     public void takeKey() {
@@ -25,42 +28,55 @@ public class Hero extends Player {
         keyboardInput(c);
     }
 
+
+    public int getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(int n) {
+        bullets = n;
+    }
+
     public void keyboardInput(char input) {
-        switch (input) {
-            case 'W':
+        switch (toLowerCase(input)) {
             case 'w':
                 move(Engine.Direction.NORTH);
                 break;
-            case 'A':
             case 'a':
                 move(Engine.Direction.WEST);
                 break;
-            case 'S':
             case 's':
                 move(Engine.Direction.SOUTH);
                 break;
-            case 'D':
             case 'd':
                 move(Engine.Direction.EAST);
                 break;
-            case 'I':
             case 'i':
-                engine.shoot(this, Engine.Direction.NORTH, rnd);
+                shootEnemy(Engine.Direction.NORTH);
                 break;
-            case 'K':
             case 'k':
-                engine.shoot(this, Engine.Direction.SOUTH, rnd);
+                shootEnemy(Engine.Direction.SOUTH);
                 break;
-            case 'J':
             case 'j':
-                engine.shoot(this, Engine.Direction.WEST, rnd);
+                shootEnemy(Engine.Direction.WEST);
                 break;
-            case 'L':
             case 'l':
-                engine.shoot(this, Engine.Direction.EAST, rnd);
+                shootEnemy(Engine.Direction.EAST);
                 break;
+            case 't':
+                // parameter is whether to show the paths
+                // or revert
+                engine.showPaths(false);
             default:
                 break;
         }
     }
+
+    private void shootEnemy(Engine.Direction dir) {
+        if (bullets > 0) {
+            bullets -= 1;
+            engine.shoot(this, dir, rnd);
+        }
+    }
+
 }
