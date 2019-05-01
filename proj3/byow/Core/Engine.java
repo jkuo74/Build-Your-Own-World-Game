@@ -104,8 +104,8 @@ public class Engine {
                 players.add(placeWarrior(hero));
             }
         }
-        _HUD();
-        ter.renderFrame(gameGrid);
+        //_HUD();
+        //ter.renderFrame(gameGrid);
 
         // Only if keyboard is allowed
         if (isKeyboard) {
@@ -124,8 +124,8 @@ public class Engine {
                         w.play(c);
                     }
                 }
-                _HUD();
-                ter.renderFrame(gameGrid);
+                //_HUD();
+                //ter.renderFrame(gameGrid);
 
             }
         }
