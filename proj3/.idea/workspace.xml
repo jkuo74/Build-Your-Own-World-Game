@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="310c1538-cb97-4eee-8258-dcc86cd8e16f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/byow/Core/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Engine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/byow/Core/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/save.txt" beforeDir="false" afterPath="$PROJECT_DIR$/save.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,7 +18,7 @@
     <option name="delegatedBuild" value="true" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.52058554">
+    <splitter split-orientation="horizontal" split-proportion="0.37328455">
       <split-first>
         <leaf>
           <file pinned="false" current-in-tab="false">
@@ -105,8 +107,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/byow/Core/Menu.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="130">
-                  <caret line="113" column="28" lean-forward="true" selection-start-line="113" selection-start-column="28" selection-end-line="113" selection-end-column="28" />
+                <state relative-caret-position="361">
+                  <caret line="85" column="47" selection-start-line="85" selection-start-column="45" selection-end-line="85" selection-end-column="47" />
                   <folding>
                     <element signature="imports" expanded="true" />
                     <element signature="e#1842#1843#0" expanded="true" />
@@ -119,25 +121,14 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="123">
-                  <caret line="80" column="29" selection-start-line="80" selection-start-column="29" selection-end-line="80" selection-end-column="29" />
+                <state relative-caret-position="268">
+                  <caret line="179" column="31" selection-start-line="179" selection-start-column="31" selection-end-line="179" selection-end-column="31" />
                   <folding>
                     <element signature="imports" expanded="true" />
-                    <element signature="e#5838#5839#0" expanded="true" />
-                    <element signature="e#5898#5899#0" expanded="true" />
-                    <element signature="e#11208#11209#0" expanded="true" />
-                    <element signature="e#11270#11271#0" expanded="true" />
-                    <element signature="e#16588#16589#0" expanded="true" />
+                    <element signature="e#7065#7066#0" expanded="true" />
+                    <element signature="e#12698#12699#0" expanded="true" />
+                    <element signature="e#17817#17818#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="221">
-                  <caret line="503" column="20" lean-forward="true" selection-start-line="503" selection-start-column="20" selection-end-line="503" selection-end-column="20" />
                 </state>
               </provider>
             </entry>
@@ -162,6 +153,8 @@
       <find>loadS</find>
       <find>Sys</find>
       <find>createWorld</find>
+      <find>n7193300625454684331saaawasdaawd:qa</find>
+      <find>print</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -172,12 +165,12 @@
       <list>
         <option value="$PROJECT_DIR$/byow/Core/Hero.java" />
         <option value="$PROJECT_DIR$/byow/Core/Warrior.java" />
-        <option value="$PROJECT_DIR$/byow/Core/Menu.java" />
         <option value="$PROJECT_DIR$/byow/Core/Element.java" />
         <option value="$PROJECT_DIR$/byow/Core/Coordinate.java" />
         <option value="$PROJECT_DIR$/byow/TileEngine/TETile.java" />
         <option value="$PROJECT_DIR$/byow/TileEngine/TERenderer.java" />
         <option value="$PROJECT_DIR$/byow/TileEngine/Tileset.java" />
+        <option value="$PROJECT_DIR$/byow/Core/Menu.java" />
         <option value="$PROJECT_DIR$/byow/Core/Engine.java" />
       </list>
     </option>
@@ -233,7 +226,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1556753493615" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1556756952612" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -363,18 +356,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/byow/Core/Menu.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="113" column="28" lean-forward="true" selection-start-line="113" selection-start-column="28" selection-end-line="113" selection-end-column="28" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1842#1843#0" expanded="true" />
-            <element signature="e#1889#1890#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/byow/Core/Coordinate.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -474,21 +455,31 @@
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
-          <caret line="503" column="20" lean-forward="true" selection-start-line="503" selection-start-column="20" selection-end-line="503" selection-end-column="20" />
+          <caret line="504" column="20" lean-forward="true" selection-start-line="504" selection-start-column="20" selection-end-line="504" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/byow/Core/Menu.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="85" column="47" selection-start-line="85" selection-start-column="45" selection-end-line="85" selection-end-column="47" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1842#1843#0" expanded="true" />
+            <element signature="e#1889#1890#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="123">
-          <caret line="80" column="29" selection-start-line="80" selection-start-column="29" selection-end-line="80" selection-end-column="29" />
+        <state relative-caret-position="268">
+          <caret line="179" column="31" selection-start-line="179" selection-start-column="31" selection-end-line="179" selection-end-column="31" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5838#5839#0" expanded="true" />
-            <element signature="e#5898#5899#0" expanded="true" />
-            <element signature="e#11208#11209#0" expanded="true" />
-            <element signature="e#11270#11271#0" expanded="true" />
-            <element signature="e#16588#16589#0" expanded="true" />
+            <element signature="e#7065#7066#0" expanded="true" />
+            <element signature="e#12698#12699#0" expanded="true" />
+            <element signature="e#17817#17818#0" expanded="true" />
           </folding>
         </state>
       </provider>

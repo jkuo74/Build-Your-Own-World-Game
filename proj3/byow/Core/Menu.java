@@ -83,7 +83,7 @@ public class Menu {
                     case 'L':
                     case 'l':
                         flag = false;
-                        engine.loadSavedGame();
+                        engine.loadSavedGame("");
                         break;
                     default:
                 }

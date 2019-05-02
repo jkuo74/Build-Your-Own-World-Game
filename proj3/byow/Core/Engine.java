@@ -73,15 +73,18 @@ public class Engine implements Serializable {
     }
 
     public TETile[][] runGame(String input, HashSet ps, boolean isKeyboard, boolean isLoad) {
-        // ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        String rest = "";
+
+        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
+        if (toLowerCase(input.charAt(0)) == 'l') {
+            loadSavedGame(input.substring(1));
+        }
 
         Object[] commands = generateSeed(input);
         // If seed could not be generated, return
         if (commands[0] == null || commands[1] == null) {
-            System.out.println("World never created");
-            createWorld(new Room[0]);
             return gameGrid;
         }
 
@@ -105,7 +108,7 @@ public class Engine implements Serializable {
         }
 
         if (isLoad) {
-            String rest = (String) commands[1];
+            rest = (String) commands[1];
             for (int j = 0; j < rest.length(); j++) {
                 hero.play(rest.charAt(j));
             }
@@ -124,19 +127,18 @@ public class Engine implements Serializable {
             hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
 
-        //hud();
-        //ter.renderFrame(gameGrid);
+        hud();
+        ter.renderFrame(gameGrid);
 
+        String userInput = input;
         // Only if keyboard is allowed
         if (isKeyboard) {
-
-            String userInput = "";
             char prevChar = 'a';
             while (!endGame) {
                 if (StdDraw.hasNextKeyTyped()) {
                     char c = StdDraw.nextKeyTyped();
                     if (quitSequence(c, prevChar)) {
-                        quitAndSave(input + userInput, players);
+                        quitAndSave(userInput, players);
                     }
                     hero.play(c);
                     // If non-action key pressed, Nothing should happen
@@ -156,8 +158,33 @@ public class Engine implements Serializable {
                     }
                 }
                 hud();
-                // ter.renderFrame(gameGrid);
+                ter.renderFrame(gameGrid);
             }
+        } else {
+            char prevChar = 'a';
+            for (int n = 0; n < rest.length(); n++) {
+                char c = rest.charAt(n);
+                if (quitSequence(c, prevChar)) {
+                    quitAndSave(userInput.substring(0,userInput.length() - 2), players);
+                    break;
+                }
+                if (actionKeyPressed(c)) {
+                    for (Player w : players) {
+                        w.play(c);
+                        if (hero.isDead()) {
+                            endGame = true;
+                            heroAlive = false;
+                        }
+                    }
+                }
+                if (c == ':') {
+                    prevChar = ':';
+                } else {
+                    prevChar = 'a';
+                }
+            }
+            hud();
+            ter.renderFrame(gameGrid);
         }
         return gameGrid;
     }
@@ -223,9 +250,11 @@ public class Engine implements Serializable {
     /**
      * Load saved game by loading the string of inputs previously
      * entered by user and creating a new game with these inputs.
+     * @param loadedString: if a previous game was loaded, that is the string
+     *                    that's suceeding it.
      */
     // @Source: Editor class
-    public void loadSavedGame() {
+    public void loadSavedGame(String loadedString) {
         String savedInput = "";
         HashSet ps = new HashSet();
         File f = new File("./save.txt");
@@ -246,8 +275,14 @@ public class Engine implements Serializable {
                 System.out.println("class not found");
                 System.exit(0);
             }
+            boolean keyboard = true;
+            if (loadedString.length() > 0) {
+                keyboard = false;
+            }
+            System.out.println(loadedString);
+            runGame(savedInput + loadedString, ps, keyboard, true);
             // run startNewGame running the "rest" commands
-            runGame(savedInput, ps, true, true);
+
         }
     }
 
