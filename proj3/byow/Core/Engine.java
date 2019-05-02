@@ -75,7 +75,7 @@ public class Engine implements Serializable {
     public TETile[][] runGame(String input, HashSet ps, boolean isKeyboard, boolean isLoad) {
         String rest = "";
 
-        // ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        //ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
         if (toLowerCase(input.charAt(0)) == 'l') {
@@ -307,12 +307,12 @@ public class Engine implements Serializable {
             System.out.println("file saved successfully, thanks for playing!");
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
-            System.exit(0);
+            //System.exit(0);
         } catch (IOException e) {
             System.out.println(e);
-            System.exit(0);
+            //System.exit(0);
         }
-        System.exit(0);
+        // System.exit(0);
     }
 
     /**
