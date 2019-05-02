@@ -75,7 +75,7 @@ public class Engine implements Serializable {
     public TETile[][] runGame(String input, HashSet ps, boolean isKeyboard, boolean isLoad) {
         String rest = "";
 
-        ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
+        // ter.initialize(WIDTH, HEIGHT + 3, 0, 3);
         gameGrid = new TETile[WIDTH][HEIGHT];
 
         if (toLowerCase(input.charAt(0)) == 'l') {
@@ -127,8 +127,8 @@ public class Engine implements Serializable {
             hero.setBullets(Math.max(0, numOfEnemies * 2 - 3));
         }
 
-        hud();
-        ter.renderFrame(gameGrid);
+        //hud();
+        //ter.renderFrame(gameGrid);
 
         String userInput = input;
         // Only if keyboard is allowed
@@ -157,8 +157,8 @@ public class Engine implements Serializable {
                         prevChar = 'a';
                     }
                 }
-                hud();
-                ter.renderFrame(gameGrid);
+                //hud();
+                //ter.renderFrame(gameGrid);
             }
         } else {
             char prevChar = 'a';
@@ -183,8 +183,8 @@ public class Engine implements Serializable {
                     prevChar = 'a';
                 }
             }
-            hud();
-            ter.renderFrame(gameGrid);
+            //hud();
+            //ter.renderFrame(gameGrid);
         }
         return gameGrid;
     }
