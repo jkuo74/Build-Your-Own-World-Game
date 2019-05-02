@@ -4,7 +4,7 @@ import byow.TileEngine.TETile;
 
 import java.util.Random;
 
-public abstract class Player extends Element{
+public abstract class Player extends Element {
     int health;
     Engine engine;
     Random rnd;
@@ -16,7 +16,7 @@ public abstract class Player extends Element{
         health = h;
     }
 
-    abstract public void play(char c);
+    public abstract void play(char c);
 
     public void takeHit() {
         health -= 1;

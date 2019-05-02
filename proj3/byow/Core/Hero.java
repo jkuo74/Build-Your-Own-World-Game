@@ -67,15 +67,16 @@ public class Hero extends Player {
                 // parameter is whether to show the paths
                 // or revert
                 engine.showPaths(false);
-            default:
                 break;
+            default:
+                return;
         }
     }
 
     private void shootEnemy(Engine.Direction dir) {
         if (bullets > 0) {
             bullets -= 1;
-            engine.shoot(this, dir, rnd);
+            engine.shoot(this, dir);
         }
     }
 

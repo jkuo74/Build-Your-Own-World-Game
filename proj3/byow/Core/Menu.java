@@ -86,6 +86,7 @@ public class Menu {
                         engine.loadSavedGame("");
                         break;
                     default:
+                        break;
                 }
             }
             showMainMenu();
@@ -168,7 +169,9 @@ public class Menu {
                     case 'Q':
                     case 'q':
                         System.exit(0);
+                        break;
                     default:
+                        break;
                 }
             }
             int midWidth = width / 2;
@@ -177,7 +180,8 @@ public class Menu {
 
             StdDraw.clear(Color.BLACK);
             StdDraw.setPenColor(Color.WHITE);
-            StdDraw.text(midWidth, midHeight, "You lose. Press Q to quit game or M to start a new one.");
+            StdDraw.text(midWidth, midHeight,
+                    "You lose. Press Q to quit game or M to start a new one.");
             StdDraw.show();
         }
     }

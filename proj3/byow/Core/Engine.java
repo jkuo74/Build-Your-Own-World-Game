@@ -133,42 +133,25 @@ public class Engine implements Serializable {
         String userInput = input;
         // Only if keyboard is allowed
         if (isKeyboard) {
-            char prevChar = 'a';
-            while (!endGame) {
-                if (StdDraw.hasNextKeyTyped()) {
-                    char c = StdDraw.nextKeyTyped();
-                    if (quitSequence(c, prevChar)) {
-                        quitAndSave(userInput, players);
-                    }
-                    hero.play(c);
-                    // If non-action key pressed, Nothing should happen
-                    if (actionKeyPressed(c)) {
-                        userInput += c;
-                        for (Player w : players) {
-                            w.play(c);
-                            if (hero.isDead()) {
-                                endGame = true;
-                                heroAlive = false;
-                            }
-                        }
-                    } if (c == ':') {
-                        prevChar = ':';
-                    } else {
-                        prevChar = 'a';
-                    }
-                }
-                //hud();
-                //ter.renderFrame(gameGrid);
-            }
+            doWithKeyboard(userInput);
         } else {
-            char prevChar = 'a';
-            for (int n = 0; n < rest.length(); n++) {
-                char c = rest.charAt(n);
+            doWithoutKeyboard(userInput, rest);
+        }
+        return gameGrid;
+    }
+
+    public void doWithKeyboard(String u) {
+        char prevChar = 'a';
+        while (!endGame) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
                 if (quitSequence(c, prevChar)) {
-                    quitAndSave(userInput.substring(0,userInput.length() - 2), players);
-                    break;
+                    quitAndSave(u, players);
                 }
+                hero.play(c);
+                // If non-action key pressed, Nothing should happen
                 if (actionKeyPressed(c)) {
+                    u += c;
                     for (Player w : players) {
                         w.play(c);
                         if (hero.isDead()) {
@@ -186,9 +169,33 @@ public class Engine implements Serializable {
             //hud();
             //ter.renderFrame(gameGrid);
         }
-        return gameGrid;
     }
-
+    public void doWithoutKeyboard(String u, String commands) {
+        char prevChar = 'a';
+        for (int n = 0; n < commands.length(); n++) {
+            char c = commands.charAt(n);
+            if (quitSequence(c, prevChar)) {
+                quitAndSave(u.substring(0, u.length() - 2), players);
+                break;
+            }
+            if (actionKeyPressed(c)) {
+                for (Player w : players) {
+                    w.play(c);
+                    if (hero.isDead()) {
+                        endGame = true;
+                        heroAlive = false;
+                    }
+                }
+            }
+            if (c == ':') {
+                prevChar = ':';
+            } else {
+                prevChar = 'a';
+            }
+        }
+        //hud();
+        //ter.renderFrame(gameGrid);
+    }
     /**
      * Prohibits enemies from moving if a non-action key was pressed
      * Checking if a valid key was pressed.
@@ -198,7 +205,7 @@ public class Engine implements Serializable {
     private boolean actionKeyPressed(char c) {
         c = toLowerCase(c);
         if (c == 'a' || c == 'w' || c == 's' || c == 'd'
-        || c == 'i' || c == 'l' || c == 'k' || c == 'j') {
+                || c == 'i' || c == 'l' || c == 'k' || c == 'j') {
             return true;
         }
         return false;
@@ -382,8 +389,7 @@ public class Engine implements Serializable {
      * @param p - hero
      * @return If some creature was shot or not
      */
-    // TODO: Remove print statements.
-    public boolean shoot(Player p, Direction dir, Random rng) {
+    public boolean shoot(Player p, Direction dir) {
         int range = 10;
         double probability = 1;
         // shot misses with 0 probability
@@ -397,8 +403,7 @@ public class Engine implements Serializable {
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getY() + i > HEIGHT - 1) {
                         break;
-                    }
-                    else if (gameGrid[p.getX()][p.getY() + i] == Tileset.WARRIOR) {
+                    } else if (gameGrid[p.getX()][p.getY() + i] == Tileset.WARRIOR) {
                         hitWarrior(p.getX(), p.getY() + i);
                         hit = true;
                     }
@@ -408,8 +413,7 @@ public class Engine implements Serializable {
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getY() - i < 0) {
                         break;
-                    }
-                    else if (gameGrid[p.getX()][p.getY() - i] == Tileset.WARRIOR) {
+                    } else if (gameGrid[p.getX()][p.getY() - i] == Tileset.WARRIOR) {
                         hitWarrior(p.getX(), p.getY() - i);
                         hit = true;
                     }
@@ -419,8 +423,7 @@ public class Engine implements Serializable {
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getX() + i > WIDTH - 1) {
                         break;
-                    }
-                    else if (gameGrid[p.getX() + i][p.getY()] == Tileset.WARRIOR) {
+                    } else if (gameGrid[p.getX() + i][p.getY()] == Tileset.WARRIOR) {
                         hitWarrior(p.getX() + i, p.getY());
                         hit = true;
                     }
@@ -430,8 +433,7 @@ public class Engine implements Serializable {
                 for (int i = 1; i < range + 1; i++) {
                     if (p.getX() - i < 0) {
                         break;
-                    }
-                    else if (gameGrid[p.getX() - i][p.getY()] == Tileset.WARRIOR) {
+                    } else if (gameGrid[p.getX() - i][p.getY()] == Tileset.WARRIOR) {
                         hitWarrior(p.getX() - i, p.getY());
                         hit = true;
                     }
@@ -473,7 +475,7 @@ public class Engine implements Serializable {
         if (p.getID() == Tileset.INDIANA) {
             Hero indy = (Hero) p;
             if (!indy.hasAllKeys()) {
-                pickUpKey(pX + moveX, pY + moveY, indy);
+                pickUpKey(pX + moveX, pY + moveY);
                 if (indy.hasAllKeys()) {
                     door.id = Tileset.UNLOCKED_DOOR;
                     gameGrid[door.getX()][door.getY()] = door.id;
@@ -504,9 +506,8 @@ public class Engine implements Serializable {
      *
      * @param x    x-Coordinate
      * @param y    y-Coordinate
-     * @param hero Hero to pick up key
      */
-    private void pickUpKey(int x, int y, Hero hero) {
+    private void pickUpKey(int x, int y) {
         if (gameGrid[x][y] == Tileset.TREE) {
             hero.takeKey();
             gameGrid[x][y] = Tileset.FLOOR;
@@ -585,8 +586,6 @@ public class Engine implements Serializable {
             int c = fringe.removeSmallest();
             visited.add(c);
 
-            // Coordinate a = convertToCoordinate(c);
-            // System.out.println("I'm at: " + a.getX() + ", " + a.getY() + " End is: " + hero.getX() + ", " + hero.getY());
             if (c == end) {
                 return extractPath(edgeTo, start, end);
             }
@@ -597,22 +596,23 @@ public class Engine implements Serializable {
         return new ArrayList<>(); // if search failed, return empty array
     }
 
-    private void relax(ArrayHeapMinPQ<Integer> pQ, HashMap<Integer, Integer> path
-            , HashMap<Integer, Double> distTo, int from, int to
-            , HashSet<Integer> visited) {
+    private void relax(ArrayHeapMinPQ<Integer> pQ, HashMap<Integer, Integer> path,
+                       HashMap<Integer, Double> distTo, int from, int to,
+                       HashSet<Integer> visited) {
         if (distTo.get(from) == null) {
             return;
         } else if ((distTo.get(to) == null || distTo.get(from) + 1 < distTo.get(to))
                 && !visited.contains(to)) {
             distTo.put(to, distTo.get(from) + 1);
             path.put(to, from);
-            if (!pQ.contains(to) ) {
+            if (!pQ.contains(to)) {
                 pQ.add(to, distTo.get(to));
             }
         }
     }
 
-    public ArrayList<Coordinate> extractPath(HashMap<Integer, Integer> edgeTo, Integer start, Integer end) {
+    public ArrayList<Coordinate> extractPath(HashMap<Integer, Integer> edgeTo,
+                                             Integer start, Integer end) {
         ArrayList<Coordinate> path = new ArrayList<>();
         Stack<Integer> s = new Stack<>();
         int c = end;
@@ -650,7 +650,7 @@ public class Engine implements Serializable {
                     && gameGrid[c.getX()][c.getY() - 1] != Tileset.WARRIOR) {
                 result.add(convertToInt(new Coordinate(c.getX(), c.getY() - 1)));
             }
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
             System.out.println("Search Error " + e);
             return new ArrayList<>();
         }
